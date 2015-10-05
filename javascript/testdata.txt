@@ -1,0 +1,14 @@
+﻿{
+	"statusCode":"30",
+	"currentTemperature":"100.8",
+	"targetTemperature":"175",
+	"elapsedTime":"15:33",
+	"profileName":"Test profile",
+	"step":
+		{
+			"number":"6",
+			"targetTemperature":"220",
+			"moveTimeRemaining":"2:31",
+			"stayTimeRemaining":"3:17"
+		}
+}

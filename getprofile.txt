@@ -1,0 +1,14 @@
+{  
+   "Action":0,
+   "StatusCode":0,
+   "Profile":{  
+      "Id":8,
+      "Name":"MovTest",
+      "ProfileText":"100-200-300#400-500-600#"
+   },
+   "ProfileId":0,
+   "Profiles":[],
+   "CurrentTemp":0,
+   "ElapsedTime":0,
+   "ManualTargetTemp":null
+}

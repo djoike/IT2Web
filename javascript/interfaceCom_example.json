@@ -1,0 +1,83 @@
+//Profile JSON format example
+// {
+// 	"steps":[
+// 		{
+// 			"stepno":0,
+// 			"stepTemperature":60,
+// 			"stepTransitionTime":0,
+// 			"stepHoldingTime":120
+// 		},
+// 		{
+// 			"stepno":1,
+// 			"stepTemperature":150,
+// 			"stepTransitionTime":60,
+// 			"stepHoldingTime":120
+// 		}
+// 	]
+// }
+
+//SetStatus = 10,
+//SaveProfile = 20,
+//GetProfile = 30,
+//GetProfiles = 40,
+//SetProfile = 50,
+//GetRoastData = 60,
+//GetStatus = 70,
+//SetManualRoastTemperature = 80,
+//GetManualRoastTemperature = 90
+
+{  
+   "Action":0,
+   "StatusCode":0,
+   "Profile":{  
+      "Id":8,
+      "Name":"MovTest",
+      "ProfileText":"000-000-010#000-000-020#"
+   },
+   "ProfileId":0,
+   "Profiles":[  
+      {  
+         "Id":8,
+         "Name":"MovTest",
+         "ProfileText":"000-000-010#000-000-020#"
+      },
+      {  
+         "Id":2,
+         "Name":"NotTheSameName",
+         "ProfileText":"Bleh"
+      },
+      {  
+         "Id":3,
+         "Name":"test",
+         "ProfileText":"Bleh"
+      },
+      {  
+         "Id":4,
+         "Name":"test",
+         "ProfileText":"Bleh"
+      },
+      {  
+         "Id":5,
+         "Name":"test",
+         "ProfileText":"Det er den rigtige"
+      },
+      {  
+         "Id":6,
+         "Name":"test",
+         "ProfileText":"Bleh"
+      },
+      {  
+         "Id":7,
+         "Name":"test",
+         "ProfileText":"Bleh"
+      },
+      {  
+         "Id":1,
+         "Name":"test",
+         "ProfileText":"Bleh"
+      }
+   ],
+   "CurrentTemp":null,
+   "ElapsedTime":0,
+   "ManualTargetTemp":null
+}

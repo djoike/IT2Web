@@ -1,0 +1,10 @@
+{  
+   "Action":0,
+   "StatusCode":220,
+   "Profile":null,
+   "ProfileId":0,
+   "Profiles":[],
+   "CurrentTemp":150,
+   "ElapsedTime":297,
+   "ManualTargetTemp":250
+}
