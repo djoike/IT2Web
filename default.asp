@@ -440,6 +440,7 @@
 		<div class="container" data-type="edit-profile">
 			<div class="headline-edit-container">
 				<input type="text" name="profileName" placeholder="Enter profile name" data-default-value="" />
+				<input type="hidden" name="profileId" value="" data-default-value="" />
 			</div>
 			<div class="element fullwidth" data-type="step-list">
 				<div class="datacontainer">

@@ -25,7 +25,6 @@
 //GetStatus = 70,
 //SetManualRoastTemperature = 80,
 //GetManualRoastTemperature = 90
-
 {  
    "Action":0,
    "StatusCode":0,

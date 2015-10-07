@@ -47,7 +47,8 @@ var EndPoints = Object.freeze(
 			GetProfile: "/getprofile.txt",
 			DeleteProfile: "/getprofile.txt",
 			SetProfile: "/getprofile.txt",
-			GetProfiles: "/getprofiles.txt"
+			GetProfiles: "/getprofiles.txt",
+			SaveProfile: "/getprofiles.txt"
 		},
 		Live:
 		{
@@ -57,7 +58,8 @@ var EndPoints = Object.freeze(
 			GetProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
 			DeleteProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
 			SetProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			GetProfiles: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx"
+			GetProfiles: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
+			SaveProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx"
 		}
 	}
 );

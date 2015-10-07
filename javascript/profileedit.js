@@ -16,7 +16,9 @@ var profileEdit = {
 			var JSONObject = $.parseJSON(data);
 			if(JSONObject.Profile)
 			{
-				containerElm.closest('.container').find('.headline-edit-container input').val(JSONObject.Profile.Name);
+				var contElm = containerElm.closest('.container');
+				contElm.find('.headline-edit-container input[type="text"]').val(JSONObject.Profile.Name);
+				contElm.find('.headline-edit-container input[type="hidden"]').val(JSONObject.Profile.Id);
 				if(JSONObject.Profile.ProfileText.length > 0)
 				{
 					var steps = profile.parseRawProfile(JSONObject.Profile.ProfileText).steps;
@@ -59,7 +61,6 @@ var profileEdit = {
 		event.stopPropagation();
 		
 		var elm = $(this);
-		console.log(elm);
 
 		if(elm.hasClass('armed') || elm.attr('data-disable-arming'))
 		{
@@ -96,13 +97,77 @@ var profileEdit = {
 			profile.buttonTimer = setTimeout("ui.disarmAll('list-of-profiles');",3000);
 		}
 	},
+	getProfileText: function()
+	{
+		//000-000-010#000-000-020#
+		var profileText = "";	
+		$('.container[data-type="edit-profile"] ul li').each(function(){
+			var container = $(this);
+			profileText += profileEdit.getStepAsString(container);
+		});
+		return profileText;
+	},
+	getProfileObject: function()
+	{
+		var object = {};
+		var container = $('.container[data-type="edit-profile"]'); 
+		
+		var id = container.find('input[type="hidden"]').val();
+		var name = container.find('input[type="text"]').val();
+		object.Id = id.length > 0 ? id : 0;
+		object.Name = name;
+		object.ProfileText = profileEdit.getProfileText();
+
+		return object;
+	},
+	isValidProfile: function()
+	{
+		var profileValid = true;
+		var steps = $('.container[data-type="edit-profile"] ul li');
+		steps.each(function(){
+			var container = $(this);
+			var stepText = profileEdit.getStepAsString(container);
+			if(stepText.match("[0-9]{3}-[0-9]{3}-[0-9]{3}#").length != 1)
+			{
+				profileValid = false;
+			}
+		});
+		return profileValid && steps.length > 0;
+	},
 	saveProfile: function()
 	{
-
+		if(profileEdit.isValidProfile())
+		{
+			var dataObj = {"Action":InterfaceComActions.SaveProfile,"Profile":profileEdit.getProfileObject()};
+			$.ajax({
+			    type: Methods.Test,
+			    url: EndPoints.Test.SaveProfile,
+			    data: {"data":JSON.stringify(dataObj)},
+			    success: function(){common.goToFunction("ProfileList")}
+			});
+		}
+		else
+		{
+			alert("The profile is not valid");
+		}
 	},
 	addStep: function()
 	{
+		var containerElm = $('.container[data-type="edit-profile"] ul');
+		var tmpHTML = profileEdit.stepTemplate.replace("{step-temperature}",'').replace("{step-progression-time}",'').replace("{step-total-time}",'');
+		containerElm.append(tmpHTML);
+	},
+	getStepAsString: function(stepElement)
+	{
+		var stepText = "";
+		stepText += helpers.lefZ(stepElement.find('.step-temperature-input').val(),3);
+		stepText += "-";
+		stepText += helpers.lefZ(stepElement.find('.step-progression-time-input').val(),3);
+		stepText += "-";
+		stepText += helpers.lefZ(stepElement.find('.step-total-time-input').val(),3);
+		stepText += "#";
 
+		return stepText;
 	}
 	// **************************************  END: Clicking/tapping events
 

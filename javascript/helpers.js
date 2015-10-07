@@ -22,5 +22,9 @@ var helpers = {
 		    url: EndPoints.Test.SetStatus,
 		    data: {"data":JSON.stringify(dataObj)}
 		});
+	},
+	isInt: function(input)
+	{
+		return (typeof input==='number' && (input%1)===0);
 	}
 }
