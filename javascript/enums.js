@@ -1,6 +1,6 @@
 var	statusCodeIntervals = Object.freeze(
 	{
-		default: 50000,
+		default: 5000,
 		30:1000
 	}
 );

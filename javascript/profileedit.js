@@ -48,12 +48,29 @@ var profileEdit = {
 	initProfileEdit: function()
 	{
 		profileEdit.bindButtonEvents();
+		profileEdit.bindProfileEvents();
 	},
 	bindButtonEvents: function()
 	{
 		var strContainerElm = '.container[data-type="edit-profile"]';
 		var eventStr = helpers.is_touch_device() ? 'touchend' : 'click';
 		$('.button',strContainerElm).bind(eventStr,profileEdit.handleButtonClicked);
+	},	
+	bindProfileEvents: function()
+	{
+		var strContainerElm = '.container[data-type="edit-profile"]';
+		var eventStr = helpers.is_touch_device() ? 'touchend' : 'click';
+		$('ul li span[data-action="delete"]',strContainerElm).live(eventStr,profileEdit.removeStep);
+		$('ul',strContainerElm).sortable({handle:'span[data-action="move"]',axis:"y"});
+	},
+	removeStep: function(event)
+	{
+		event.preventDefault();
+		event.stopPropagation();
+		
+		var elm = $(this);
+
+		elm.closest('li').remove();
 	},
 	handleButtonClicked: function(event)
 	{
@@ -82,19 +99,19 @@ var profileEdit = {
 			}
 			
 			//Remove arming
-			ui.disarmAll('list-of-profiles');
+			ui.disarmAll('edit-profile');
 		}
 		else
 		{
 			//Remove any other arming
-			ui.disarmAll('list-of-profiles');
+			ui.disarmAll('edit-profile');
 
 			//Arm this
 			elm.addClass('armed');
 
 			//Reset and add new timer for disarming
 			clearTimeout(profileEdit.buttonTimer);
-			profile.buttonTimer = setTimeout("ui.disarmAll('list-of-profiles');",3000);
+			profileEdit.buttonTimer = setTimeout("ui.disarmAll('edit-profile');",3000);
 		}
 	},
 	getProfileText: function()

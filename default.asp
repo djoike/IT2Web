@@ -121,6 +121,12 @@
 				width: 37%;
 				padding-right:3vw;
 			}
+			div.element[data-type="status"] {
+				float:right;
+			}
+			div.element[data-type="status"] h2 {
+				text-align: right;
+			}
 			div.element[data-type="status"] .datacontainer {
 				padding-top:2.5vw;
 				height:15.1vw;
@@ -427,32 +433,31 @@
 		</div>
 		<div class="container" data-type="list-of-profiles">
 			<h1>Profiles</h1>
+			<div class="button" data-type="new-profile" data-disable-arming="true"><div class="armedbg"></div><div class="label">New</div></div>
+			<div class="button" data-type="back" data-disable-arming="true"><div class="armedbg"></div><div class="label">Back</div></div>
+			<div class="spacer-s1"></div>
 			<div class="element fullwidth" data-type="profile-list">
 				<div class="datacontainer">
 					<ul data-default-value=""></ul>
 				</div>
 			</div>
-			<div class="spacer-s1"></div>
-			<div class="button" data-type="new-profile" data-disable-arming="true"><div class="armedbg"></div><div class="label">New</div></div>
-			<div class="button" data-type="back" data-disable-arming="true"><div class="armedbg"></div><div class="label">Back</div></div>
-			<div class="cb"></div>
 		</div>
 		<div class="container" data-type="edit-profile">
 			<div class="headline-edit-container">
 				<input type="text" name="profileName" placeholder="Enter profile name" data-default-value="" />
 				<input type="hidden" name="profileId" value="" data-default-value="" />
 			</div>
-			<div class="element fullwidth" data-type="step-list">
-				<div class="datacontainer">
-					<ul data-default-value=""></ul>
-				</div>
-			</div>
 			<div class="spacer-s1"></div>
 			<div class="button" data-type="add-step" data-disable-arming="true"><div class="armedbg"></div><div class="label">Add step</div></div>
 			<div class="spacer-s1"></div>
 			<div class="button" data-type="save-profile" data-disable-arming="true"><div class="armedbg"></div><div class="label">Save</div></div>
 			<div class="button" data-type="back"><div class="armedbg"></div><div class="label">Back</div></div>
-			<div class="cb"></div>
+			<div class="spacer-s1"></div>
+			<div class="element fullwidth" data-type="step-list">
+				<div class="datacontainer">
+					<ul data-default-value=""></ul>
+				</div>
+			</div>
 		</div>
 		<script type="text/javascript">
 			$(document).ready(function(){

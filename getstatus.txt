@@ -1,8 +1,8 @@
 {  
    "Action":0,
-   "StatusCode":220,
+   "StatusCode":110,
    "Profile":null,
-   "ProfileId":0,
+   "ProfileId":1,
    "Profiles":[],
    "CurrentTemp":150,
    "ElapsedTime":297,
