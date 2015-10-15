@@ -48,6 +48,7 @@ var common = {
 		{
 			case "ProfileRoastPage":
 				baseElement = $('.container[data-type="roasting-with-profile"]');
+				profile.activeProfile = null;
 				break;
 			case "ManualRoastPage":
 				baseElement = $('.container[data-type="roasting-manually"]');
@@ -140,8 +141,8 @@ var common = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetStatus};
 		common.statusTransporter = $.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.GetStatus,
+		    type: Methods.Live,
+		    url: EndPoints.Live.GetStatus,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleStatusSuccess
 		});
@@ -156,6 +157,12 @@ var common = {
 	},
 	handleStatusTick: function()
 	{
+		common.cancelCurrentStatusCall();
+		common.statusTimer = setTimeout(common.handleStatusTick,common.statusCallInterval);
+		common.getNewStatus();
+	},
+	cancelCurrentStatusCall: function()
+	{
 		if(typeof(common.statusTransporter)!="undefined")
 		{
 			if(common.statusTransporter.readyState != 4)
@@ -163,8 +170,6 @@ var common = {
 				common.statusTransporter.abort();
 			}
 		}
-		common.statusTimer = setTimeout(common.handleStatusTick,common.statusCallInterval);
-		common.getNewStatus();
 	},
 	// **************************************  END: Status handling etc.
 

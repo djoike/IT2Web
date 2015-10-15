@@ -13,25 +13,31 @@ var profile = {
 		{
 			$('.element[data-type="current-temperature"] .datacontainer',strContainerElm).html(JSONObject.CurrentTemp.toFixed(1).toString().replace('.',',')+' &deg;C');
 		}
-		if(JSONObject.ElapsedTime)
+		if(JSONObject.ProfileId > 0)
 		{
-			profile.updateElapsed(JSONObject.ElapsedTime);
-			if(profile.activeProfile == null && JSONObject.ProfileId > 0)
+			if(profile.activeProfile == null || profile.activeProfile.ProfileId != JSONObject.ProfileId)
 			{
 				profile.loadActiveProfile(JSONObject.ProfileId);
 			}
-			else
-			{
-				profile.lastElapsedReadTimeStamp = Date.now();
-				profile.latestElapsed = JSONObject.ElapsedTime;
-				profile.incrementElapsed = true;
+		}
+		else
+		{
+			profile.activeProfile == null;
+		}
+		
+		profile.updateElapsed(JSONObject.ElapsedTime);
+		
+		if(profile.activeProfile)
+		{
+			profile.lastElapsedReadTimeStamp = Date.now();
+			profile.latestElapsed = JSONObject.ElapsedTime;
+			profile.incrementElapsed = true;
 
-				var profileName = profile.activeProfile.Name;
-				var roastingStatusObject = profile.getCurrentStepDataObj(JSONObject.ElapsedTime, profile.activeProfile);
-				
-				$('h1',strContainerElm).html(profileName);
-				profile.insertData(roastingStatusObject);
-			}
+			var profileName = profile.activeProfile.Name;
+			var roastingStatusObject = profile.getCurrentStepDataObj(JSONObject.ElapsedTime, profile.activeProfile);
+			
+			$('h1',strContainerElm).html(profileName);
+			profile.insertData(roastingStatusObject);
 		}
 	},
 	insertData: function(roastingStatusObject)
@@ -71,6 +77,7 @@ var profile = {
 		function handleLoadActiveProfileSuccess(data)
 		{
 			var JSONObject = $.parseJSON(data);
+			console.log(JSONObject);
 			if(JSONObject.Profile)
 			{
 				if(JSONObject.Profile.ProfileText.length > 10)
@@ -78,6 +85,7 @@ var profile = {
 					profile.activeProfile = 
 						{
 							"Name": JSONObject.Profile.Name,
+							"ProfileId": JSONObject.Profile.Id,
 							"Profile": profile.parseRawProfile(JSONObject.Profile.ProfileText)
 						};
 				}
@@ -86,8 +94,8 @@ var profile = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetProfile,"ProfileId":ProfileId};
 		$.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.GetProfile,
+		    type: Methods.Live,
+		    url: EndPoints.Live.GetProfile,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleLoadActiveProfileSuccess
 		});

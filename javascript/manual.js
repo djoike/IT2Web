@@ -15,6 +15,10 @@ var manual =
 		{
 			manual.updateManualTargetTemperature(JSONObject.ManualTargetTemp);
 		}
+		else
+		{
+			manual.updateManualTargetTemperature(0);
+		}
 	},
 	updateManualTargetTemperature: function(temperature)
 	{
@@ -35,6 +39,7 @@ var manual =
 	},
 	modifyInterfaceTargetTemperature: function(modifyValue)
 	{
+		common.cancelCurrentStatusCall();
 		var latestTemp = manual.getLatestTargetTemp();
 		var newTemp = latestTemp + modifyValue;
 		if(newTemp >= 0)
@@ -51,8 +56,8 @@ var manual =
 	{
 		var dataObj = {"Action":InterfaceComActions.SetManualRoastTemperature,"ManualTargetTemp":temperatureToSend};
 		$.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.SetManualRoastTemperature,
+		    type: Methods.Live,
+		    url: EndPoints.Live.SetManualRoastTemperature,
 		    data: {"data":JSON.stringify(dataObj)}
 		});
 	},

@@ -32,8 +32,8 @@ var profileEdit = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetProfile,"ProfileId":profileId};
 		$.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.GetProfile,
+		    type: Methods.Live,
+		    url: EndPoints.Live.GetProfile,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleLoadProfile
 		});
@@ -144,7 +144,7 @@ var profileEdit = {
 		steps.each(function(){
 			var container = $(this);
 			var stepText = profileEdit.getStepAsString(container);
-			if(stepText.match("[0-9]{3}-[0-9]{3}-[0-9]{3}#").length != 1)
+			if(stepText.match("[0-9]{3}-[0-9]{3}-[0-9]{3}#") == null)
 			{
 				profileValid = false;
 			}
@@ -157,8 +157,8 @@ var profileEdit = {
 		{
 			var dataObj = {"Action":InterfaceComActions.SaveProfile,"Profile":profileEdit.getProfileObject()};
 			$.ajax({
-			    type: Methods.Test,
-			    url: EndPoints.Test.SaveProfile,
+			    type: Methods.Live,
+			    url: EndPoints.Live.SaveProfile,
 			    data: {"data":JSON.stringify(dataObj)},
 			    success: function(){common.goToFunction("ProfileList")}
 			});
