@@ -35,7 +35,10 @@ var common = {
 					break;
 				case "ProfileEdit":
 					$('.container[data-type="edit-profile"]').show();
-					break;					
+					break;
+				case "ErrorPage":
+					$('.container[data-type="error"]').show();
+					break;						
 			}
 			common.currentFunction = strFunctionName;
 		}
@@ -61,6 +64,9 @@ var common = {
 				break;
 			case "ProfileEdit":
 				baseElement = $('.container[data-type="edit-profile"]');
+				break;
+			case "ErrorPage":
+				baseElement = $('.container[data-type="error"]');
 				break;
 		}
 		
@@ -119,6 +125,9 @@ var common = {
 			case RoastStatus.EndingRoast:
 				common.goToFunction("EndingRoast");
 				break;
+			case RoastStatus.ErrorStatusCodesDoNotMatch:
+				common.goToFunction("ErrorPage");
+				break;
 		}
 	},
 
@@ -131,6 +140,7 @@ var common = {
 		manual.initManualPage();
 		profileList.initProfileList();
 		profileEdit.initProfileEdit();
+		error.initErrorPage();
 	},
 	getNewStatus: function()
 	{

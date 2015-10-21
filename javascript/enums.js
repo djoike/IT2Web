@@ -1,6 +1,6 @@
 var	statusCodeIntervals = Object.freeze(
 	{
-		default: 5000,
+		default: 2000,
 		30:1000
 	}
 );
@@ -33,7 +33,8 @@ var InterfaceComActions = Object.freeze(
 		GetStatus: 70,
 		SetManualRoastTemperature: 80,
 		GetManualRoastTemperature: 90,
-		DeleteProfile: 100
+		DeleteProfile: 100,
+		MasterReset: 110
 	}
 );
 
@@ -48,7 +49,8 @@ var EndPoints = Object.freeze(
 			DeleteProfile: "/getprofile.txt",
 			SetProfile: "/getprofile.txt",
 			GetProfiles: "/getprofiles.txt",
-			SaveProfile: "/getprofiles.txt"
+			SaveProfile: "/getprofiles.txt",
+			MasterReset: "/getprofiles.txt"
 		},
 		Live:
 		{
@@ -59,7 +61,8 @@ var EndPoints = Object.freeze(
 			DeleteProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
 			SetProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
 			GetProfiles: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			SaveProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx"
+			SaveProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
+			MasterReset: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx"
 		}
 	}
 );

@@ -12,6 +12,7 @@
         <script src="javascript/profilelist.js?rnd=<%=rnd%>"></script>
         <script src="javascript/profileedit.js?rnd=<%=rnd%>"></script>
         <script src="javascript/manual.js?rnd=<%=rnd%>"></script>
+        <script src="javascript/error.js?rnd=<%=rnd%>"></script>
         <script src="javascript/common.js?rnd=<%=rnd%>"></script>
 		<script src="https://use.typekit.net/scx7can.js"></script>
 		<script>try{Typekit.load();}catch(e){}</script>
@@ -178,6 +179,13 @@
 				width:89.6vw;
 			}
 			.button[data-type="end-roast"].armed {
+				border-color:#e56a6a;
+			}
+			.button[data-type="master-reset"] {
+				float:left;
+				width:89.6vw;
+			}
+			.button[data-type="master-reset"].armed {
 				border-color:#e56a6a;
 			}
 			.button[data-type="new-profile"], .button[data-type="save-profile"] {
@@ -458,6 +466,10 @@
 					<ul data-default-value=""></ul>
 				</div>
 			</div>
+		</div>
+		<div class="container" data-type="error">
+			<h1>Error has occurred</h1>
+			<div class="button" data-type="master-reset"><div class="armedbg"></div><div class="label">Reset system</div></div>
 		</div>
 		<script type="text/javascript">
 			$(document).ready(function(){
