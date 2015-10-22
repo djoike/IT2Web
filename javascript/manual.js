@@ -56,8 +56,8 @@ var manual =
 	{
 		var dataObj = {"Action":InterfaceComActions.SetManualRoastTemperature,"ManualTargetTemp":temperatureToSend};
 		$.ajax({
-		    type: Methods.Live,
-		    url: EndPoints.Live.SetManualRoastTemperature,
+		    type: Methods.Test,
+		    url: EndPoints.Test.SetManualRoastTemperature,
 		    data: {"data":JSON.stringify(dataObj)}
 		});
 	},

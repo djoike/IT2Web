@@ -39,6 +39,28 @@ var profile = {
 			$('h1',strContainerElm).html(profileName);
 			profile.insertData(roastingStatusObject);
 		}
+		
+		switch(common.currentStatus)
+		{
+			case RoastStatus.ProfileLoaded:
+				$('.button[data-type="end-roast"]',strContainerElm).show();
+				$('.button[data-type="start-roast"]',strContainerElm).show();
+				break;
+			case RoastStatus.LoadProfile:
+			case RoastStatus.ProfileLoading:
+			case RoastStatus.StartRoastingWithProfile:
+			case RoastStatus.StartingRoastingWithProfile:
+			case RoastStatus.RoastingWithProfile:
+				$('.button[data-type="end-roast"]',strContainerElm).show();
+				$('.button[data-type="start-roast"]',strContainerElm).hide();
+				break;
+			case RoastStatus.NoCommunicationYet:
+			case RoastStatus.RoasterOnlineReady:
+			default:
+				$('.button[data-type="end-roast"]',strContainerElm).hide();
+				$('.button[data-type="start-roast"]',strContainerElm).hide();				
+				break;
+		}
 	},
 	insertData: function(roastingStatusObject)
 	{
@@ -94,8 +116,8 @@ var profile = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetProfile,"ProfileId":ProfileId};
 		$.ajax({
-		    type: Methods.Live,
-		    url: EndPoints.Live.GetProfile,
+		    type: Methods.Test,
+		    url: EndPoints.Test.GetProfile,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleLoadActiveProfileSuccess
 		});
@@ -220,6 +242,9 @@ var profile = {
 					break;
 				case "end-roast":
 					helpers.switchToStatus(RoastStatus.EndRoast);
+					break;
+				case "start-roast":
+					helpers.switchToStatus(RoastStatus.StartRoastingWithProfile);
 					break;
 			}
 			

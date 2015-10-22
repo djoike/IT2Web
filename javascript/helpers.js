@@ -17,9 +17,9 @@ var helpers = {
 	{
 		var dataObj = {"Action":InterfaceComActions.SetStatus,"StatusCode":statusCode};
 		$.ajax({
-		    type: Methods.Live,
+		    type: Methods.Test,
 		    //url: '/getprofile.txt',
-		    url: EndPoints.Live.SetStatus,
+		    url: EndPoints.Test.SetStatus,
 		    data: {"data":JSON.stringify(dataObj)}
 		});
 	},

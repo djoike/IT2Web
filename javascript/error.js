@@ -59,8 +59,8 @@ var error =
 	{
 		var dataObj = {"Action":InterfaceComActions.MasterReset};
 		$.ajax({
-		    type: Methods.Live,
-		    url: EndPoints.Live.MasterReset,
+		    type: Methods.Test,
+		    url: EndPoints.Test.MasterReset,
 		    data: {"data":JSON.stringify(dataObj)}
 		});
 	}

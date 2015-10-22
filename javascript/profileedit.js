@@ -32,8 +32,8 @@ var profileEdit = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetProfile,"ProfileId":profileId};
 		$.ajax({
-		    type: Methods.Live,
-		    url: EndPoints.Live.GetProfile,
+		    type: Methods.Test,
+		    url: EndPoints.Test.GetProfile,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleLoadProfile
 		});
@@ -157,8 +157,8 @@ var profileEdit = {
 		{
 			var dataObj = {"Action":InterfaceComActions.SaveProfile,"Profile":profileEdit.getProfileObject()};
 			$.ajax({
-			    type: Methods.Live,
-			    url: EndPoints.Live.SaveProfile,
+			    type: Methods.Test,
+			    url: EndPoints.Test.SaveProfile,
 			    data: {"data":JSON.stringify(dataObj)},
 			    success: function(){common.goToFunction("ProfileList")}
 			});

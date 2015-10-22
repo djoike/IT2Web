@@ -62,6 +62,9 @@
 			.container[data-type="edit-profile"] {
 				display:none;
 			}
+			.container[data-type="error"] {
+				display:none;
+			}
 			.container h1 {
 				font-size: 13vw;
 				margin-bottom:5vw;
@@ -178,8 +181,20 @@
 				float:left;
 				width:89.6vw;
 			}
+			.container[data-type="roasting-with-profile"] .button[data-type="end-roast"]
+			{
+				display: none;
+			}
 			.button[data-type="end-roast"].armed {
 				border-color:#e56a6a;
+			}
+			.button[data-type="start-roast"] {
+				float:left;
+				width:89.6vw;
+				display: none;
+			}
+			.button[data-type="start-roast"].armed {
+				border-color:#96dd4e;
 			}
 			.button[data-type="master-reset"] {
 				float:left;
@@ -411,7 +426,9 @@
 			<div class="spacer-s1"></div>
 			<div class="button" data-type="manual-override"><div class="armedbg"></div><div class="label">Manual</div></div>
 			<div class="spacer-s1"></div>
-			<div class="button" data-type="end-roast"><div class="armedbg"></div><div class="label">End roast</div></div>
+			<div class="button" data-type="start-roast" data-visible-on-clear="false"><div class="armedbg"></div><div class="label">Start roast</div></div>
+			<div class="spacer-s1"></div>
+			<div class="button" data-type="end-roast" data-visible-on-clear="false"><div class="armedbg"></div><div class="label">End roast</div></div>
 			<div class="cb"></div>
 		</div>
 		<div class="container" data-type="roasting-manually">

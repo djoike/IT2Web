@@ -1,5 +1,5 @@
 var common = {
-	
+
 
 
 
@@ -82,6 +82,9 @@ var common = {
 				elm.html(elm.data('default-value'));
 			}
 		});
+
+		baseElement.find('[data-visible-on-clear="true"]').show();
+		baseElement.find('[data-visible-on-clear="false"]').hide();
 	},
 	// **************************************  END: Navigation between functions
 
@@ -100,7 +103,7 @@ var common = {
 
 	handleStatusJSON: function(JSONObject)
 	{
-		common.currentStatus = JSONObject.StatusCode;
+		common.currentStatus = parseInt(JSONObject.StatusCode);
 
 		switch(parseInt(JSONObject.StatusCode))
 		{
@@ -151,8 +154,8 @@ var common = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetStatus};
 		common.statusTransporter = $.ajax({
-		    type: Methods.Live,
-		    url: EndPoints.Live.GetStatus,
+		    type: Methods.Test,
+		    url: EndPoints.Test.GetStatus,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleStatusSuccess
 		});
