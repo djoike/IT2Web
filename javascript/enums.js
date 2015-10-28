@@ -14,6 +14,7 @@ var RoastStatus = Object.freeze(
 		StartRoastingWithProfile: 115,
 		StartingRoastingWithProfile: 120,
 		RoastingWithProfile: 130,
+		RemoveProfile: 145,
 		StartManualRoast: 205,
 		StartingManualRoast: 210,
 		RoastingManually: 220,
@@ -34,7 +35,8 @@ var InterfaceComActions = Object.freeze(
 		SetManualRoastTemperature: 80,
 		GetManualRoastTemperature: 90,
 		DeleteProfile: 100,
-		MasterReset: 110
+		MasterReset: 110,
+		RemoveProfile: 120
 	}
 );
 
@@ -50,19 +52,21 @@ var EndPoints = Object.freeze(
 			SetProfile: "/getprofile.txt",
 			GetProfiles: "/getprofiles.txt",
 			SaveProfile: "/getprofiles.txt",
-			MasterReset: "/getprofiles.txt"
+			MasterReset: "/getprofiles.txt",
+			RemoveProfile: "/getprofiles.txt"
 		},
 		Live:
 		{
-			GetStatus: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			SetStatus: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			SetManualRoastTemperature: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			GetProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			DeleteProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			SetProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			GetProfiles: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			SaveProfile: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx",
-			MasterReset: "http://192.168.1.219/IT2/RoastIO/InterfaceCom.aspx"
+			GetStatus: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			SetStatus: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			SetManualRoastTemperature: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			GetProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			DeleteProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			SetProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			GetProfiles: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			SaveProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			MasterReset: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
+			RemoveProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx"
 		}
 	}
 );

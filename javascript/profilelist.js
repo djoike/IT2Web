@@ -7,8 +7,8 @@ var profileList = {
 		{
 			var dataObj = {"Action":InterfaceComActions.DeleteProfile,"ProfileId":profileId};
 			$.ajax({
-			    type: Methods.Test,
-			    url: EndPoints.Test.DeleteProfile,
+			    type: Methods.Live,
+			    url: EndPoints.Live.DeleteProfile,
 			    data: {"data":JSON.stringify(dataObj)},
 			    async: false 
 			});
@@ -20,8 +20,8 @@ var profileList = {
 		{
 			var dataObj = {"Action":InterfaceComActions.SetProfile,"ProfileId":profileId};
 			$.ajax({
-			    type: Methods.Test,
-			    url: EndPoints.Test.SetProfile,
+			    type: Methods.Live,
+			    url: EndPoints.Live.SetProfile,
 			    data: {"data":JSON.stringify(dataObj)}
 			});
 		}
@@ -59,8 +59,8 @@ var profileList = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetProfiles};
 		$.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.GetProfiles,
+		    type: Methods.Live,
+		    url: EndPoints.Live.GetProfiles,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleLoadProfiles
 		});

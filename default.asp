@@ -185,6 +185,17 @@
 			{
 				display: none;
 			}
+			.container[data-type="roasting-with-profile"] div.remove-profile
+			{
+				display: block;
+				position:absolute;
+				width: 6vw;
+				height: 6vw;
+				background: transparent center no-repeat;
+				background-size: cover;
+				right: 5vw;
+				top: 8vw;
+			}
 			.button[data-type="end-roast"].armed {
 				border-color:#e56a6a;
 			}
@@ -350,7 +361,7 @@
 				margin-left:2vw;
 				top:2vw;
 			}
-			.container .element[data-type="profile-list"] .datacontainer li span[data-action="delete"], .container[data-type="edit-profile"] .element[data-type="step-list"] .datacontainer li span[data-action="delete"]  {
+			.container .element[data-type="profile-list"] .datacontainer li span[data-action="delete"], .container[data-type="edit-profile"] .element[data-type="step-list"] .datacontainer li span[data-action="delete"], .container[data-type="roasting-with-profile"] div.remove-profile  {
 				background-image:url('data:image/svg+xml;utf8,<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="95.939px" height="95.939px" viewBox="0 0 95.939 95.939" style="enable-background:new 0 0 95.939 95.939;" xml:space="preserve"><g>	<path style="fill:#a76565;" d="M62.819,47.97l32.533-32.534c0.781-0.781,0.781-2.047,0-2.828L83.333,0.586C82.958,0.211,82.448,0,81.919,0 c-0.53,0-1.039,0.211-1.414,0.586L47.97,33.121L15.435,0.586c-0.75-0.75-2.078-0.75-2.828,0L0.587,12.608 c-0.781,0.781-0.781,2.047,0,2.828L33.121,47.97L0.587,80.504c-0.781,0.781-0.781,2.047,0,2.828l12.02,12.021 c0.375,0.375,0.884,0.586,1.414,0.586c0.53,0,1.039-0.211,1.414-0.586L47.97,62.818l32.535,32.535 c0.375,0.375,0.884,0.586,1.414,0.586c0.529,0,1.039-0.211,1.414-0.586l12.02-12.021c0.781-0.781,0.781-2.048,0-2.828L62.819,47.97 z"/></g></svg>');
 			}
 			.container .element[data-type="profile-list"] .datacontainer li span[data-action="edit"] {
@@ -400,6 +411,7 @@
 	<body>
 		<div class="disable"><h2 data-default-value=""></h2><span></span></div>
 		<div class="container" data-type="roasting-with-profile">
+			<div class="remove-profile" data-visible-on-clear="false" data-disable-arming="true" data-type="remove-profile"></div>
 			<h1 data-default-value="No profile loaded">No profile loaded</h1>
 			<div class="element" data-type="current-temperature">
 				<h2>Temperature</h2>

@@ -108,13 +108,18 @@ var common = {
 		switch(parseInt(JSONObject.StatusCode))
 		{
 			case RoastStatus.NoCommunicationYet:
-			case RoastStatus.RoasterOnlineReady:
 			case RoastStatus.LoadProfile:
 			case RoastStatus.ProfileLoading:
 			case RoastStatus.ProfileLoaded:
 			case RoastStatus.StartRoastingWithProfile:
 			case RoastStatus.StartingRoastingWithProfile:
 			case RoastStatus.RoastingWithProfile:
+			case RoastStatus.LoadNewProfile:
+				common.goToFunction("ProfileRoastPage");
+				profile.handleData(JSONObject);
+				break;
+			case RoastStatus.RoasterOnlineReady:
+				common.clearFunction("ProfileRoastPage");
 				common.goToFunction("ProfileRoastPage");
 				profile.handleData(JSONObject);
 				break;
@@ -154,8 +159,8 @@ var common = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetStatus};
 		common.statusTransporter = $.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.GetStatus,
+		    type: Methods.Live,
+		    url: EndPoints.Live.GetStatus,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleStatusSuccess
 		});

@@ -37,6 +37,7 @@ var profile = {
 			var roastingStatusObject = profile.getCurrentStepDataObj(JSONObject.ElapsedTime, profile.activeProfile);
 			
 			$('h1',strContainerElm).html(profileName);
+			$('div.remove-profile',strContainerElm).show();
 			profile.insertData(roastingStatusObject);
 		}
 		
@@ -116,8 +117,8 @@ var profile = {
 		}
 		var dataObj = {"Action":InterfaceComActions.GetProfile,"ProfileId":ProfileId};
 		$.ajax({
-		    type: Methods.Test,
-		    url: EndPoints.Test.GetProfile,
+		    type: Methods.Live,
+		    url: EndPoints.Live.GetProfile,
 		    data: {"data":JSON.stringify(dataObj)},
 		    success: handleLoadActiveProfileSuccess
 		});
@@ -204,6 +205,15 @@ var profile = {
 		}
 		setTimeout(profile.handleElapsedTick,1000);
 	},
+	removeProfile: function()
+	{
+		var dataObj = {"Action":InterfaceComActions.RemoveProfile};
+		$.ajax({
+		    type: Methods.Live,
+		    url: EndPoints.Live.RemoveProfile,
+		    data: {"data":JSON.stringify(dataObj)}
+		});
+	},
 	// **************************************  END: Profile loading, parsing etc.
 
 
@@ -221,6 +231,7 @@ var profile = {
 		var strContainerElm = '.container[data-type="roasting-with-profile"]';
 		var eventStr = helpers.is_touch_device() ? 'touchend' : 'click';
 		$('.button',strContainerElm).bind(eventStr,profile.handleButtonClicked);
+		$('div.remove-profile',strContainerElm).bind(eventStr,profile.handleButtonClicked);
 	},
 	handleButtonClicked: function(event)
 	{
@@ -245,6 +256,9 @@ var profile = {
 					break;
 				case "start-roast":
 					helpers.switchToStatus(RoastStatus.StartRoastingWithProfile);
+					break;
+				case "remove-profile":
+					profile.removeProfile();
 					break;
 			}
 			
