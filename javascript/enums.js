@@ -1,6 +1,6 @@
 var	statusCodeIntervals = Object.freeze(
 	{
-		default: 2000,
+		default: 1000,
 		30:1000
 	}
 );
@@ -57,16 +57,16 @@ var EndPoints = Object.freeze(
 		},
 		Live:
 		{
-			GetStatus: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			SetStatus: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			SetManualRoastTemperature: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			GetProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			DeleteProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			SetProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			GetProfiles: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			SaveProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			MasterReset: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx",
-			RemoveProfile: "http://192.168.1.199/IT2/RoastIO/InterfaceCom.aspx"
+			GetStatus: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			SetStatus: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			SetManualRoastTemperature: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			GetProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			DeleteProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			SetProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			GetProfiles: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			SaveProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			MasterReset: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			RemoveProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx"
 		}
 	}
 );
