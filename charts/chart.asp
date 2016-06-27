@@ -1,4 +1,4 @@
-﻿<!--#include virtual="connstring.asp"-->
+﻿<!--#include file="connstring.asp"-->
 <%
 Session.LCID = 1030
 Session.CodePage = 65001
@@ -12,7 +12,32 @@ conn.Open strConn
     <head>
         <title>IT2 roast charts</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-        <!--link rel="stylesheet" href='styles.css' type="text/css"-->
+        <style type="text/css">
+        	body
+        	{
+        		margin:0;
+        		padding: 0;
+        	}
+        	select {
+			   background: transparent;
+			   width: 95vw;
+			   margin:2.5vh 2.5vw 2.5vh 2.5vw;
+			   height: 7vh;
+			   padding: 1vh 2vw 1vh 2vw;
+			   font-size: 2vh;
+			   border: 1px solid #ccc;
+			   -webkit-appearance: none;
+			   -moz-appearance: none;
+			   appearance: none;
+			}
+			#chart_div
+			{
+				width: 95vw;
+				margin:0 2.5vw 0 2.5vw;
+				height: 75.5vh;
+				background-color: #efefef;
+			}
+        </style>
     </head>
 	<body>
 		<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
@@ -36,22 +61,27 @@ conn.Open strConn
 			        },
 			        vAxis: {
 			          title: 'Temperature'
-			        },
-			        width:800,
-			        height:400
+			        }
 			      };
 				var chart = new google.charts.Line(document.getElementById('chart_div'));
       			chart.draw(data, options);
 			}
 			$(document).ready(function(){
-				$('select').on('change',function(){
-					var roastId = $(this).val();
-					if(roastId && roastId > -1)
-					{
-						getData(roastId);
-					}
-				});
+				$('select').on('change',getCurrentRoastData);
 			});
+			var timer;
+			$(window).resize(function(){
+				clearTimeout(timer);
+				timer = setTimeout(getCurrentRoastData,250);
+			});
+			function getCurrentRoastData()
+			{
+				var roastId = $('select').val();
+				if(roastId && roastId > -1)
+				{
+					getData(roastId);
+				}
+			}
 		</script>
 		<select>
 			<option value="-1">Pick roast</option>
