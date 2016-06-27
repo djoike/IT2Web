@@ -12,6 +12,7 @@ conn.Open strConn
     <head>
         <title>IT2 roast charts</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=1.0, minimum-scale=1.0, maximum-scale=1.0">
         <style type="text/css">
         	body
         	{
@@ -22,21 +23,38 @@ conn.Open strConn
 			   background: transparent;
 			   width: 95vw;
 			   margin:2.5vh 2.5vw 2.5vh 2.5vw;
-			   height: 7vh;
+			   height: 10vh;
 			   padding: 1vh 2vw 1vh 2vw;
-			   font-size: 2vh;
+			   font-size: 1.8vh;
 			   border: 1px solid #ccc;
 			   -webkit-appearance: none;
 			   -moz-appearance: none;
 			   appearance: none;
 			}
+			@media (orientation: landscape)
+			{
+				select
+				{
+					font-size: 3vh;
+				}
+			}
 			#chart_div
 			{
 				width: 95vw;
 				margin:0 2.5vw 0 2.5vw;
-				height: 75.5vh;
+				height: 72.5vh;
 				background-color: #efefef;
 			}
+			.info
+			{
+				font-family: helvetica;
+				font-size: 3vw;
+				margin: 1vh 2.5vw 2.5vh 2.5vw;
+				display: none;
+			}
+			/*select:focus, select:hover {
+				font-size: 5vw; /* Adding 16px on focus/hover will prevent page zoom */
+			}*/
         </style>
     </head>
 	<body>
@@ -54,13 +72,12 @@ conn.Open strConn
 			}
 			function drawChart(data)
 			{
+				var text = $('select').find('option:selected').data('text');
+				$('.info').html(text);
 				var data = new google.visualization.DataTable(data);
 				var options = {
-			        hAxis: {
-			          title: 'Time'
-			        },
-			        vAxis: {
-			          title: 'Temperature'
+			        legend: {
+			        	position:'none'
 			        }
 			      };
 				var chart = new google.charts.Line(document.getElementById('chart_div'));
@@ -102,18 +119,17 @@ conn.Open strConn
 					profileName = "None"
 				end if
 				hasManualControl = rsRoasts("ManualControlStartTime")&""<>""
+				textualRepres = "T: " & Server.HTMLEncode(roastStartTime&"") & "&nbsp;ID: " & roastId & "&nbsp;M: " & (hasManualControl&"") & "&nbsp;P: " & Server.HTMLEncode(profileName)
 				%>
-				<option value="<%=roastId%>">
-					T: <%=Server.HTMLEncode(roastStartTime&"")%>
-					&nbsp;ID: <%=roastId%>
-					&nbsp;M: <%=hasManualControl%>
-					&nbsp;P: <%=profileName%>
+				<option value="<%=roastId%>" data-text="<%=textualRepres%>">
+					<%=textualRepres%>
 				</option>
 				<%
 				rsRoasts.MoveNext
 			loop
 			%>
 		</select>
+		<div class="info"></div>
 		<div id="chart_div"></div>
 	</body>
 </html>

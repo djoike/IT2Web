@@ -1,4 +1,4 @@
-<!--#include virtual="connstring.asp"-->
+<!--#include file="connstring.asp"-->
 <%
 Session.LCID = 1033
 Session.CodePage = 65001
@@ -15,7 +15,7 @@ end function
 %>
 {
 	"cols":[
-		{"id": "A","label":"Time","type":"datetime"},
+		{"id": "A","label":null,"type":"datetime"},
 		{"id": "B","label":"Temperature","type":"number"}
 	],
 	"rows":[
