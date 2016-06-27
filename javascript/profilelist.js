@@ -104,9 +104,12 @@ var profileList = {
 				profileList.returnToPreviousFunction();
 				break;
 			case "delete":
-				profileList.deleteProfile(profileId);
-				common.clearFunction("ProfileList"); //To clear the list of profiles
-				profileList.loadProfiles(); //Load new list of profiles
+				if(confirm("Delete?"))
+				{
+					profileList.deleteProfile(profileId);
+					common.clearFunction("ProfileList"); //To clear the list of profiles
+					profileList.loadProfiles(); //Load new list of profiles
+				}
 				break;
 			case "edit":
 				profileList.editProfile(profileId);

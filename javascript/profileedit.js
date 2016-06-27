@@ -7,7 +7,7 @@ var profileEdit = {
 
 
 	// **************************************  Profile loading, parsing etc.
-	stepTemplate: "<li><span class='input-container'><input type='number' pattern='[0-9]*' class='step-temperature-input' value='{step-temperature}' />&nbsp;&deg;C</span><span class='input-container'><input type='number' pattern='[0-9]*' class='step-progression-time-input' value='{step-progression-time}' />&nbsp;s</span><span class='input-container last'><input type='number' pattern='[0-9]*' class='step-total-time-input' value='{step-total-time}' />&nbsp;s</span><span data-action='move'></span><span data-action='delete'></span><div class='cb'></div></li>",
+	stepTemplate: "<li><span class='input-container'><input type='number' pattern='[0-9]*' class='step-temperature-input' value='{step-temperature}' />&nbsp;&deg;C</span><span class='input-container'><input type='number' pattern='[0-9]*' class='step-progression-time-input' value='{step-progression-time}' />&nbsp;P</span><span class='input-container last'><input type='number' pattern='[0-9]*' class='step-total-time-input' value='{step-total-time}' />&nbsp;T</span><span data-action='move'></span><span data-action='delete'></span><div class='cb'></div></li>",
 	loadProfile: function(profileId)
 	{
 		function handleLoadProfile(data)
