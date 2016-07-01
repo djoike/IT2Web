@@ -19,10 +19,15 @@ conn.Open strConn
         		margin:0;
         		padding: 0;
         	}
+        	div.top
+        	{
+        		width: 95vw;
+        		margin:2.5vh 2.5vw 2.5vh 2.5vw;
+        	}
         	select {
 			   background: transparent;
-			   width: 95vw;
-			   margin:2.5vh 2.5vw 2.5vh 2.5vw;
+			   width: 83vw;
+			   margin:0vh 0vw 0vh 2vw;
 			   height: 10vh;
 			   padding: 1vh 2vw 1vh 2vw;
 			   font-size: 1.8vh;
@@ -30,10 +35,27 @@ conn.Open strConn
 			   -webkit-appearance: none;
 			   -moz-appearance: none;
 			   appearance: none;
+			   float: left;
+			}
+			button
+			{
+				width: 10vw;
+				margin:0vh 0vw 0vh 0vw;
+				height: 10vh;
+				/*padding: 1vh 2vw 1vh 2vw;*/
+				font-size: 2vh;
+				border: 1px solid #ccc;
+				background: transparent;
+				float: left;
+				border-radius: 3px;
 			}
 			@media (orientation: landscape)
 			{
 				select
+				{
+					font-size: 3vh;
+				}
+				button
 				{
 					font-size: 3vh;
 				}
@@ -51,6 +73,9 @@ conn.Open strConn
 				font-size: 3vw;
 				margin: 1vh 2.5vw 2.5vh 2.5vw;
 				display: none;
+			}
+			.cb{
+				clear: both;
 			}
 			/*select:focus, select:hover {
 				font-size: 5vw; /* Adding 16px on focus/hover will prevent page zoom */
@@ -85,6 +110,7 @@ conn.Open strConn
 			}
 			$(document).ready(function(){
 				$('select').on('change',getCurrentRoastData);
+				$('button').on('click',handleButtonClick);
 			});
 			var timer;
 			$(window).resize(function(){
@@ -99,36 +125,63 @@ conn.Open strConn
 					getData(roastId);
 				}
 			}
+			var timing = false;
+			var interval;
+			function handleButtonClick()
+			{
+				if(!timing)
+				{
+					var roastId = $('select').val();
+					if(roastId && roastId > -1)
+					{
+						interval = setInterval('getData('+roastId+');',5000);
+						timing = true;
+					}
+				}
+				else
+				{
+					clearInterval(interval);
+					timing = false;
+				}
+				var fontWeight = timing ? 'bold' : 'normal';
+				{
+					$('button').css({'font-weight':fontWeight});
+				}
+			}
 		</script>
-		<select>
-			<option value="-1">Pick roast</option>
-			<%
-			strSQL = "SELECT Roast.Id, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime"&_
-						" FROM Roast LEFT OUTER JOIN"&_
-						" Profile ON Roast.ProfileId = Profile.Id"&_
-						" WHERE ((SELECT COUNT(Id)"&_
-						" FROM RoastLog"&_
-						" WHERE (RoastId = Roast.Id)) > 10)"&_
-						" ORDER BY Roast.StartTime DESC"
-			set rsRoasts = conn.Execute(strSQL)
-			do while not rsRoasts.eof
-				roastId = int(rsRoasts("Id"))
-				roastStartTime = rsRoasts("StartTime")
-				profileName = rsRoasts("Name")
-				if profileName&""="" then
-					profileName = "None"
-				end if
-				hasManualControl = rsRoasts("ManualControlStartTime")&""<>""
-				textualRepres = "T: " & Server.HTMLEncode(roastStartTime&"") & "&nbsp;ID: " & roastId & "&nbsp;M: " & (hasManualControl&"") & "&nbsp;P: " & Server.HTMLEncode(profileName)
-				%>
-				<option value="<%=roastId%>" data-text="<%=textualRepres%>">
-					<%=textualRepres%>
-				</option>
+		<div class="top">
+			<button>R</button>
+			<select>
+				<option value="-1">Pick roast</option>
 				<%
-				rsRoasts.MoveNext
-			loop
-			%>
-		</select>
+				strSQL = "SELECT Roast.Id, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime"&_
+							" FROM Roast LEFT OUTER JOIN"&_
+							" Profile ON Roast.ProfileId = Profile.Id"&_
+							" WHERE ((SELECT COUNT(Id)"&_
+							" FROM RoastLog"&_
+							" WHERE (RoastId = Roast.Id)) > 10)"&_
+							" ORDER BY Roast.StartTime DESC"
+				set rsRoasts = conn.Execute(strSQL)
+				do while not rsRoasts.eof
+					roastId = int(rsRoasts("Id"))
+					roastStartTime = rsRoasts("StartTime")
+					profileName = rsRoasts("Name")
+					if profileName&""="" then
+						profileName = "None"
+					end if
+					hasManualControl = rsRoasts("ManualControlStartTime")&""<>""
+					textualRepres = "T: " & Server.HTMLEncode(roastStartTime&"") & "&nbsp;ID: " & roastId & "&nbsp;M: " & (hasManualControl&"") & "&nbsp;P: " & Server.HTMLEncode(profileName)
+					%>
+					<option value="<%=roastId%>" data-text="<%=textualRepres%>">
+						<%=textualRepres%>
+					</option>
+					<%
+					rsRoasts.MoveNext
+				loop
+				%>
+			</select>
+			<div class="cb"></div>
+		</div>
 		<div class="info"></div>
 		<div id="chart_div"></div>
 	</body>
