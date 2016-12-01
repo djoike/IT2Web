@@ -1,0 +1,20 @@
+body {
+	background:#918f88 url('images/bg.jpg') center top no-repeat;
+	padding-top:20px;
+}
+nav.main-nav {
+}
+
+.btn {
+	&.btn-sm {
+		&.refresh-button {
+			padding-top:1px;
+			padding-bottom:1px;
+		}
+	}
+}
+
+.loader {
+	background:transparent url('images/puff.svg') center 25px no-repeat;
+	height:100px;
+}

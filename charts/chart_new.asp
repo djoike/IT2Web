@@ -92,77 +92,40 @@ conn.Open strConn
         		display:none;
         	}
         </style>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js" integrity="sha256-RASNMNlmRtIreeznffYMDUxBXcMRjijEaaGF/gxT6vw=" crossorigin="anonymous"></script>
     </head>
 	<body>
 		<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<script type="text/javascript">
-			google.charts.load('current', {packages: ['line', 'corechart'], language: 'da'});
-			function getData(roastId)
-			{
-				$.ajax({
-					url: "data.asp",
-					data:{"roastid":roastId},
-					success: drawChart
-				});
-			}
-			function drawChart(data)
-			{
-				var text = $('select').find('option:selected').data('text');
-				$('.info').html(text);
-				var data = new google.visualization.DataTable(data);
-				var options = {
-			        legend: {
-			        	position:'none'
-			        },
-			        hAxis: {gridlines: {count:20}},
-			        vAxis: {
-						gridlines: {count:30}
-	                },
-			      };
-				var chart = new google.charts.Line(document.getElementById('chart_div'));
-      			chart.draw(data, google.charts.Line.convertOptions(options));
-			}
 			$(document).ready(function(){
-				$('select').on('change',getCurrentRoastData);
-				$('button').on('click',handleButtonClick);
+				var ctx = document.getElementById("chart_div");
+				var myChart = new Chart(ctx, {
+				    type: 'line',
+				    data: {
+				        labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+				        datasets: [{
+				            label: '# of Votes',
+				            data: [12, 19, 3, 5, 2, 3]
+				        }]
+				    },
+				    options: {
+				        scales: {
+				            yAxes: [{
+				                ticks: {
+				                    beginAtZero:true
+				                }
+				            }]
+				        },
+				        legend: {display:false},
+				        elements:{
+				        	line: {
+				        		fill: false
+				        	}
+				        }
+				    }
+				});
 			});
-			var timer;
-			$(window).resize(function(){
-				clearTimeout(timer);
-				timer = setTimeout(getCurrentRoastData,250);
-			});
-			function getCurrentRoastData()
-			{
-				var roastId = $('select').val();
-				if(roastId && roastId > -1)
-				{
-					getData(roastId);
-				}
-			}
-			var timing = false;
-			var interval;
-			function handleButtonClick()
-			{
-				if(!timing)
-				{
-					var roastId = $('select').val();
-					if(roastId && roastId > -1)
-					{
-						interval = setInterval('getData('+roastId+');',5000);
-						timing = true;
-					}
-				}
-				else
-				{
-					clearInterval(interval);
-					timing = false;
-				}
-				var fontWeight = timing ? 'bold' : 'normal';
-				{
-					$('button').css({'font-weight':fontWeight});
-				}
-			}
 		</script>
 		<div class="top">
 			<button>R</button>
@@ -198,7 +161,7 @@ conn.Open strConn
 			<div class="cb"></div>
 		</div>
 		<div class="info"></div>
-		<div id="chart_div"></div>
+		<canvas id="chart_div"></canvas>
 	</body>
 </html>
 <%
