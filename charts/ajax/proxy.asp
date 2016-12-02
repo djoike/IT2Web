@@ -10,6 +10,13 @@ if f&""<>"" then
 	select case f
 		case "writeRoastsTable"
 			call writeRoastsTable()
+		case "writeRoast"
+			roastId = int(request.querystring("roastId"))
+			call writeRoastData(roastId)
+		case "getRoastData"
+			response.ContentType = "application/json"
+			strRoastIds = request.form("roastIds[]")&""
+			call getRoastData(strRoastIds)			
 	end select
 end if
 %>
