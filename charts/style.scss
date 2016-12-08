@@ -7,7 +7,7 @@ nav.main-nav {
 
 .btn {
 	&.btn-sm {
-		&.refresh-button {
+		&.refresh-button, &.maximize-button, &.add-button {
 			padding-top:1px;
 			padding-bottom:1px;
 		}
@@ -26,10 +26,47 @@ nav.main-nav {
 
 }
 
+.main-bean
+{
+	.bean-data-list {
+		padding: 12px 0px 3px;
+	}
+}
+
 #main-roast-chart {
 
 }
 
 #main-roast-chart-container {
 	display:none;
+	height:90%;
+	min-height:400px;
+}
+
+.panel {
+	&[data-maximize="true"] {
+		position:fixed;
+		top:2vh;
+		height:96vh;
+		left:2vw;
+		width:95.4vw;
+		z-index:10;
+	}
+}
+
+td {
+	span
+	{
+		&.glyphicon-ok {
+			color:green;
+		}
+		&.glyphicon-remove {
+			color:gray;
+		}
+	}
+}
+.remove-column {
+	.glyphicon-remove {
+		cursor:pointer;
+	}
 }

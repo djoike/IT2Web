@@ -16,7 +16,28 @@ if f&""<>"" then
 		case "getRoastData"
 			response.ContentType = "application/json"
 			strRoastIds = request.form("roastIds[]")&""
-			call getRoastData(strRoastIds)			
+			call getRoastData(strRoastIds)
+		case "saveRoast"
+			roastId = int(request.querystring("roastId"))
+			beanId = int(request.querystring("beanId"))
+			roastIntentId = int(request.querystring("roastIntentId"))
+			call saveRoast(roastId, beanId, roastIntentId)
+		case "writeBeansTable"
+			call writeBeansTable()
+		case "writeBean"
+			beanId = int(request.querystring("beanId"))
+			call writeBeanData(beanId)
+		case "deleteBean"
+			beanId = int(request.querystring("beanId"))
+			call deleteBean(beanId)
+		case "deleteRoast"
+			roastId = int(request.querystring("roastId"))
+			call deleteRoast(roastId)	
+		case "saveBean"
+			beanId = int(request.querystring("beanId"))
+			beanName = request.querystring("beanName")
+			beanIntentId = int(request.querystring("beanIntentId"))
+			call saveBean(beanId, beanName, beanIntentId)
 	end select
 end if
 %>

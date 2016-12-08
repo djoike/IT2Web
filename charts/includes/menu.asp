@@ -10,7 +10,7 @@
 	    	        <span class="icon-bar"></span>
 	    	        <span class="icon-bar"></span>
 	    	      </button>
-	    	      <a class="navbar-brand" href="">RoastHub®</a>
+	    	      <a class="navbar-brand" href="/charts/default.asp">RoastHub®</a>
 	    	    </div>
 
 	    	    <!-- Collect the nav links, forms, and other content for toggling -->
@@ -31,7 +31,7 @@
 	    	      <!--ul class="nav navbar-nav navbar-right">
 	    	        <li><a href="#">Link</a></li>
 	    	      </ul-->
-	    	      <p class="navbar-text navbar-right">INC<sup>INC</sup></p>
+	    	      <p class="navbar-text navbar-right hidden-xs">INC<sup>INC</sup></p>
 	    	    </div>
 	    	  </div>
 	    	</nav>

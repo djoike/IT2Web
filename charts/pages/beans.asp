@@ -4,12 +4,15 @@
 <!--#include virtual="/charts/includes/menu.asp"-->   	
     	<div class="container-fluid">
     		<div class="row">
-    			<div class="col-xs-12 main-roast-list">
+    			<div class="col-xs-12 main-beans-list">
 					<div class="panel panel-default">
 						<!-- Default panel contents -->
 						<div class="panel-heading">
-							Roasts
+							Beans
 							<div class="pull-right">
+								<button class="btn btn-sm add-button">
+									<span class="glyphicon glyphicon-plus"></span>
+								</button>
 								<button class="btn btn-sm refresh-button">
 									<span class="glyphicon glyphicon-refresh"></span>
 								</button>
@@ -30,20 +33,21 @@
 							function firstLoad()
 							{
 								//1. get roast table data
-								reloadRoastsTable($('.main-roast-list').find('.resultcontainer'),bindEvents);
+								loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents);
 							}
 
 							function bindEvents()
 							{
-								$('.btn.refresh-button').off('click').on('click',function(){reloadRoastsTable($('.main-roast-list').find('.resultcontainer'),bindEvents)});
-								$('.main-roast-list .remove-column .glyphicon-remove').off('click').on('click',prepareDeleteRoast);
+								$('.btn.refresh-button').off('click').on('click',function(){loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents)});
+								$('.main-beans-list .btn.add-button').off('click').on('click',function(){window.location.href="/charts/pages/bean.asp"});
+								$('.main-beans-list .glyphicon-remove').off('click').on('click',prepareDeleteBean);
 							}
-							function prepareDeleteRoast(event)
+							function prepareDeleteBean(event)
 							{
-								var roastId = $(this).closest('[data-roast-id]').data('roast-id');
-								if(confirm("Are you sure you want to delete this roast?"))
+								var beanId = $(this).closest('[data-bean-id]').data('bean-id');
+								if(confirm("Are you sure you want to delete this bean?"))
 								{
-									deleteRoast(roastId,function(){reloadRoastsTable($('.main-roast-list').find('.resultcontainer'),bindEvents)});
+									deleteBean(beanId,function(){loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents)});
 								}
 							}
 						</script>

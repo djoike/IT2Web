@@ -16,6 +16,9 @@
 								<button class="btn btn-sm refresh-button">
 									<span class="glyphicon glyphicon-refresh"></span>
 								</button>
+								<button class="btn btn-sm maximize-button hidden-xs">
+									<span class="glyphicon glyphicon-resize-full"></span>
+								</button>
 							</div>
 						</div>
 						<div class="resultcontainer"><div class="loader"></div></div>
@@ -28,8 +31,14 @@
 						<div class="panel-heading">
 							Graph
 							<div class="pull-right">
+								<button class="btn btn-sm add-button">
+									<span class="glyphicon glyphicon-plus"></span>
+								</button>
 								<button class="btn btn-sm refresh-button">
 									<span class="glyphicon glyphicon-refresh"></span>
+								</button>
+								<button class="btn btn-sm maximize-button hidden-xs">
+									<span class="glyphicon glyphicon-resize-full"></span>
 								</button>
 							</div>
 						</div>
@@ -53,7 +62,7 @@
     		function firstLoad()
     		{
     			//1. get roast
-    			loadRoast($('.main-roast').find('.resultcontainer'),__roastId);
+    			loadRoast($('.main-roast').find('.resultcontainer'),__roastId,bindEvents);
     			initChart();
     			loadDataForRoast([__roastId],handleRoastDataAndDrawGraph);
     			//drawGraph();
@@ -61,7 +70,11 @@
 
     		function bindEvents()
     		{
-    			//$('.btn.refresh-button').on('click',function(){reloadRoastsTable($('.main-roast-list').find('.resultcontainer'))});
+    			
+    			$('.btn-save').off('click').on('click',function(){saveBeanAndRoastIntent(__roastId)});
+    			$('.btn-back').off('click').on('click',function(){window.history.back()});
+    			$('.main-roast .btn.refresh-button').off('click').on('click',function(){loadRoast($('.main-roast').find('.resultcontainer'),__roastId,bindEvents)});
+    			$('.main-roast-graph .btn.refresh-button').off('click').on('click',function(){loadDataForRoast([__roastId],handleRoastDataAndDrawGraph)});
     		}
     	</script>
 <!--#include virtual="/charts/includes/foot.asp"-->
