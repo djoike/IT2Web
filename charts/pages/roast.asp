@@ -26,7 +26,7 @@
 					</div>
     			</div>
     			<div class="col-sm-9 main-roast-graph">
-					<div class="panel panel-default">
+					<div class="panel panel-default roast-graph">
 						<!-- Default panel contents -->
 						<div class="panel-heading">
 							Graph
@@ -50,9 +50,28 @@
 					</div>
     			</div>
     		</div>
+    		<div class="row">
+    			<div class="col-xs-12 main-secondary-roast">
+					<div class="panel panel-default secondary-roast">
+						<!-- Default panel contents -->
+						<div class="panel-heading">
+							Pick additional roasts
+							<div class="pull-right">
+								<button class="btn btn-sm close-button">
+									<span class="glyphicon glyphicon-remove"></span>
+								</button>
+							</div>
+						</div>
+						<div class="resultcontainer clearfix"><div class="loader"></div></div>
+
+					</div>
+    			</div>
+    		</div>
     	</div>
     	<script type="text/javascript">
     		__roastId = <%=roastId%>;
+    		__graphedRoasts = [<%=roastId%>];
+    		__rotate = 0;
     		$(function(){
     			firstLoad();
     			bindEvents();
@@ -64,17 +83,22 @@
     			//1. get roast
     			loadRoast($('.main-roast').find('.resultcontainer'),__roastId,bindEvents);
     			initChart();
-    			loadDataForRoast([__roastId],handleRoastDataAndDrawGraph);
+    			loadDataForRoast(__graphedRoasts,handleRoastDataAndDrawGraph);
     			//drawGraph();
     		}
 
     		function bindEvents()
     		{
-    			
+    			$('.main-secondary-roast .btn.close-button').off('click').on('click',function(){endAddRoast($('.main-secondary-roast').find('.resultcontainer'))});
     			$('.btn-save').off('click').on('click',function(){saveBeanAndRoastIntent(__roastId)});
     			$('.btn-back').off('click').on('click',function(){window.history.back()});
     			$('.main-roast .btn.refresh-button').off('click').on('click',function(){loadRoast($('.main-roast').find('.resultcontainer'),__roastId,bindEvents)});
-    			$('.main-roast-graph .btn.refresh-button').off('click').on('click',function(){loadDataForRoast([__roastId],handleRoastDataAndDrawGraph)});
+    			$('.main-roast-graph .btn.add-button').off('click').on('click',function(){startAddRoast($('.main-secondary-roast').find('.resultcontainer'))});
+    			$('.main-roast-graph .btn.refresh-button').off('click').on('click',function(){loadDataForRoast(__graphedRoasts,handleRoastDataAndDrawGraph)});
+    			$('#file').on('change',startPreview);
+    			$('.btn-rotate').on('click',incrementRotation);
+    			$('.btn-upload').on('click',startUpload);
+    			$('.btn-delete').on('click',deletePicture);
     		}
     	</script>
 <!--#include virtual="/charts/includes/foot.asp"-->

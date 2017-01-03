@@ -51,7 +51,7 @@
     		}
     		function redirectIfNew()
     		{
-    			//if(__beanId == 0)
+    			//if(__beanId == 0) //Comment out of we should redirect always
     			{
     				window.location.href = "/charts/pages/beans.asp"
     			}

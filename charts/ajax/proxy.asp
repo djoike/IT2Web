@@ -9,7 +9,10 @@ end if
 if f&""<>"" then
 	select case f
 		case "writeRoastsTable"
-			call writeRoastsTable()
+			call writeRoastsTable("")
+		case "writeRoastsPicker"
+			strRoastIds = request.querystring("graphedRoasts[]")&""
+			call writeRoastsTable(strRoastIds)
 		case "writeRoast"
 			roastId = int(request.querystring("roastId"))
 			call writeRoastData(roastId)
@@ -37,7 +40,11 @@ if f&""<>"" then
 			beanId = int(request.querystring("beanId"))
 			beanName = request.querystring("beanName")
 			beanIntentId = int(request.querystring("beanIntentId"))
-			call saveBean(beanId, beanName, beanIntentId)
+			beanNote = request.querystring("beanNote")
+			call saveBean(beanId, beanName, beanIntentId, beanNote)
+		case "deletePicture"
+			roastId = int(request.querystring("roastId"))
+			call deletePicture(roastId)
 	end select
 end if
 %>

@@ -37,13 +37,13 @@ function getRoastsSQL(byval roastId, byval minimumLogCount)
 	end if
 	strSQL = "SELECT Roast.Id, Roast.StartTime, Roast.EndTime, Profile.Name AS ProfileName, Roast.ManualControlStartTime,"&_
 				" COUNT(DISTINCT RoastLog.Id) AS LogCount, DATEDIFF(ss, Roast.StartTime, Roast.EndTime) AS Duration, Bean.Name AS BeanName, Bean.Id AS BeanId,"&_
-				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent"&_
+				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName"&_
 				" FROM Roast INNER JOIN"&_
 				" RoastLog ON Roast.Id = RoastLog.RoastId LEFT OUTER JOIN"&_
 				" RoastIntent ON Roast.RoastIntentId = RoastIntent.Id LEFT OUTER JOIN"&_
 				" Bean ON Roast.BeanId = Bean.Id AND Bean.Active = 1 LEFT OUTER JOIN"&_
 				" Profile ON Roast.ProfileId = Profile.Id"&_
-				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent"&_
+				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName"&_
 				" HAVING (Roast.Active = 1) AND (COUNT(DISTINCT RoastLog.Id) > "&minimumLogCount&")"& strWhereSQL &_
 				" ORDER BY Roast.Id DESC"
 	getRoastsSQL = strSQL
@@ -118,7 +118,7 @@ function getBeansSQL(byval beanId)
 		beanId = int(beanId)
 		strWhereSQL = " AND (Bean.Id = "& beanId &")"
 	end if
-	getBeansSQL = "SELECT Bean.Id, Bean.Name, BeanIntent.Id AS BeanIntentId, BeanIntent.Name AS BeanIntentName"&_
+	getBeansSQL = "SELECT Bean.Id, Bean.Name, BeanIntent.Id AS BeanIntentId, BeanIntent.Name AS BeanIntentName, Bean.Note"&_
 					" FROM Bean LEFT OUTER JOIN"&_
 					" BeanIntent ON Bean.BeanIntentId = BeanIntent.Id"&_
 					" WHERE (Bean.Active = 1)" & strWhereSQL &_
@@ -156,36 +156,75 @@ function saveRoast(byval roastId, byval beanId, byval roastIntentId)
 	conn.execute(strSQL)
 end function
 
-function saveBean(byval beanId, byval beanName, byval beanIntentId)
+function saveBean(byval beanId, byval beanName, byval beanIntentId, byval beanNote)
 	beanId = int(beanId)
 	beanName = replace(beanName&"","'","''")
+	beanNote = replace(beanNote&"","'","''")
+
 	if beanIntentId = 0 then
 		beanIntentId = "NULL"
 	end if
 
 	if beanId > 0 then
-		strSQL = "UPDATE Bean SET Name = '" & beanName & "', BeanIntentId = " & beanIntentId & " WHERE Id = " & beanId
+		strSQL = "UPDATE Bean SET Name = '" & beanName & "', BeanIntentId = " & beanIntentId & ", Note = '" & beanNote & "' WHERE Id = " & beanId
 	else
-		strSQL = "INSERT INTO Bean (Name, BeanIntentId) VALUES ('"&beanName&"',"&beanIntentId&")"
+		strSQL = "INSERT INTO Bean (Name, BeanIntentId, Note) VALUES ('"&beanName&"',"&beanIntentId&",'"&beanNote&"')"
 	end if
 	conn.execute(strSQL)
 end function
 
-sub writeRoastsTable()
+function deleteFile(byval fileNameWithPath)
+	Set fs=Server.CreateObject("Scripting.FileSystemObject")
+
+	if fs.FileExists(fileNameWithPath) then
+		fs.DeleteFile(fileNameWithPath)
+	end if
+
+	set fs = nothing
+end function
+
+function deletePicture(byval roastId)
+	set rsRoast = conn.execute(getRoastsSQL(roastId,0))
+	if not rsRoast.eof then
+		fileName = rsRoast("pictureName")
+		if fileName&""<>"" then
+			
+			fileUploadPath = Server.MapPath("/charts/uploaded/")
+			smallPath = "\small"
+			largePath = "\large"
+			megaPath = "\mega"
+
+			call deleteFile(fileUploadPath & smallPath & "\" & fileName)
+			call deleteFile(fileUploadPath & largePath & "\" & fileName)
+			call deleteFile(fileUploadPath & megaPath & "\" & fileName)
+
+			conn.execute("UPDATE Roast SET pictureName = NULL WHERE (Id = "&roastId&")")
+		end if
+	end if
+	set rsRoast = nothing
+end function
+
+sub writeRoastsTable(byval strRoastIds)
+	writePicker =  strRoastIds&""<>""
+	if writePicker then
+		for each str in split(strRoastIds,",")
+			strRoastIds = strRoastIds & "," & trim(str)
+		next
+	end if
 	%>
-	<table class="table table-hover">
+	<table class="table table-hover roast-list-table">
 		<thead>
 			<tr>
 				<th>ID</th>
 				<th>Date</th>
-				<th>Profile name</th>
+				<th>Profile</th>
 				<th class="hidden-xs">Start time</th>
 				<th class="hidden-xs">Duration</th>
 				<th class="hidden-xs">Manual</th>
 				<th class="">Bean</th>
 				<th class="hidden-xs">Intent</th>
-				<th>View</th>
-				<th><span class="glyphicon glyphicon-remove"></span></th>
+				<th><%if writePicker then%>Add<%else%>View<%end if%></th>
+				<%if not writePicker then%><th><span class="glyphicon glyphicon-remove"></span></th><%end if%>
 			</tr>
 		</thead>
 		<tbody>
@@ -198,7 +237,7 @@ sub writeRoastsTable()
 				roastDate = ""
 				if isDate(roastStartTime) then
 					roastStartTime = cdate(roastStartTime)
-					roastDate = day(roastStartTime) &"-"& month(roastStartTime) &"<span class='hidden-xs'>-"& year(roastStartTime) &"</span>"
+					roastDate = lz_1(day(roastStartTime)) &"-"& lz_1(month(roastStartTime)) &"<span class='hidden-xs'>-"& year(roastStartTime) &"</span>"
 					roastStartTime = dateTimeAsTime(roastStartTime)
 				else
 					roastDate = "-"
@@ -230,6 +269,8 @@ sub writeRoastsTable()
 				roastBean = dashIfNull(rsRoasts("BeanName"))
 
 				roastIntent = dashIfNull(rsRoasts("RoastIntent"))
+
+				alreadyPicked = writePicker AND instr(","&strRoastIds&",",","&roastID&",")>0
 				%>
 				<tr data-roast-id="<%=roastID%>">
 					<td><%=e(roastID)%></td>
@@ -240,8 +281,11 @@ sub writeRoastsTable()
 					<td class="hidden-xs"><%=roastManualControlStarted%></td>
 					<td class=""><%=e(roastBean)%></td>
 					<td class="hidden-xs"><%=e(roastIntent)%></td>
-					<td><a href="/charts/pages/roast.asp?roastid=<%=e(roastID)%>">View</a></td>
-					<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
+					<td class="view-column <%if alreadyPicked then%>picked<%end if%>">
+						<span>Added</span>
+						<a href="<%if writePicker then%>javascript:void(0);<%else%>/charts/pages/roast.asp?roastid=<%=e(roastID)%><%end if%>"><%if writePicker then%>Add<%else%>View<%end if%></a>
+					</td>
+					<%if not writePicker then%><td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td><%end if%>
 				</tr>
 				<%
 				rsRoasts.MoveNext
@@ -251,6 +295,13 @@ sub writeRoastsTable()
 			%>
 		</tbody>
 	</table>
+	<%if writePicker then%>
+	<div class="col-xs-12">
+		<div class="form-group pull-right">
+			<button class="btn btn-primary btn-save">Save</button>
+		</div>
+	</div>
+	<%end if%>
 	<%
 end sub
 
@@ -267,7 +318,7 @@ sub writeRoastData(byval roastId)
 			roastDate = ""
 			if isDate(roastStartTime) then
 				roastStartTime = cdate(roastStartTime)
-				roastDate = day(roastStartTime) &"-"& month(roastStartTime) &"<span class='hidden-xs'>-"& year(roastStartTime) &"</span>"
+				roastDate = lz_1(day(roastStartTime)) &"-"& lz_1(month(roastStartTime)) & "-" & year(roastStartTime)
 				roastStartTime = dateTimeAsTime(roastStartTime)
 			else
 				roastDate = "-"
@@ -280,6 +331,12 @@ sub writeRoastData(byval roastId)
 			else
 				roastEndTime = "-"
 			end if
+
+			roastDuration = dashIfNull(rsRoasts("Duration"))
+			if roastDuration&""<>"-" then
+				roastDuration = secondsAsTime(roastDuration)
+			end if
+
 			roastProfileName = rsRoasts("ProfileName")
 			if roastProfileName&"" = "" then
 				roastProfileName = "-"
@@ -292,6 +349,8 @@ sub writeRoastData(byval roastId)
 				roastManualControlStartTime = "-"
 			end if
 			roastLogCount = rsRoasts("LogCount")
+
+			roastPictureName = rsRoasts("pictureName")
 
 			roastBeanId = rsRoasts("BeanId")
 			roastIntentId = rsRoasts("RoastIntentId")
@@ -310,26 +369,8 @@ sub writeRoastData(byval roastId)
 			</div>
 			<div class="col-xs-12">
 				<div class="form-group">
-					<label>Start time</label>
-					<p class="form-control-static"><%=e(roastStartTime)%></p>
-				</div>
-			</div>
-			<div class="col-xs-12">
-				<div class="form-group">
-					<label>End time</label>
-					<p class="form-control-static"><%=e(roastEndTime)%></p>
-				</div>
-			</div>
-			<div class="col-xs-12">
-				<div class="form-group">
-					<label>Manual control start time</label>
-					<p class="form-control-static"><%=e(roastManualControlStartTime)%></p>
-				</div>
-			</div>
-			<div class="col-xs-12">
-				<div class="form-group">
-					<label>Log count</label>
-					<p class="form-control-static"><%=e(roastLogCount)%></p>
+					<label>Profile</label>
+					<p class="form-control-static"><%=e(roastProfileName)%></p>
 				</div>
 			</div>
 			<div class="col-xs-12">
@@ -372,6 +413,55 @@ sub writeRoastData(byval roastId)
 			</div>
 			<div class="col-xs-12">
 				<div class="form-group">
+					<label>Start time</label>
+					<p class="form-control-static"><%=e(roastStartTime)%></p>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label>Duration</label>
+					<p class="form-control-static"><%=e(roastDuration)%></p>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label>Manual control start time</label>
+					<p class="form-control-static"><%=e(roastManualControlStartTime)%></p>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label>Log count</label>
+					<p class="form-control-static"><%=e(roastLogCount)%></p>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label>Photo</label>
+					<%
+					if roastPictureName&""<>"" then
+						%>
+						<div class="existing-photo clearfix">
+							<img class="img-responsive thumbnail" src="/charts/uploaded/small/<%=e(roastPictureName)%>"
+							srcset="/charts/uploaded/small/<%=e(roastPictureName)%> 300w, /charts/uploaded/large/<%=e(roastPictureName)%> 800w, /charts/uploaded/mega/<%=e(roastPictureName)%> 1600w" border="0" />
+							<button class="btn btn-small btn-default btn-delete col-xs-12">Delete&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-remove"></span></button>
+						</div>
+						<%
+					else
+						%>
+						<input type="file" id="file" name="roastImage">
+						<div class="live-photo clearfix">
+							<img class="img-responsive live-thumb thumbnail">
+							<button class="btn btn-default btn-rotate">Rotér&nbsp;&nbsp;&nbsp;<span class="glyphicon glyphicon-retweet"></span></button><div class="pull-right"><span class="rotate-degs lead">(0&deg;)</span></div>
+							<button class="btn btn-primary btn-upload col-xs-12">Upload</button>
+						</div>
+						<%
+					end if
+					%>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group pull-right">
 					<button class="btn btn-primary btn-save">Save</button>
 					<button class="btn btn-default btn-back">Back</button>
 				</div>
@@ -395,6 +485,7 @@ sub writeBeansTable()
 					<th>ID</th>
 					<th>Name</th>
 					<th>Intent</th>
+					<th class="hidden-xs">Note</th>
 					<th>Edit</th>
 					<th><span class="glyphicon glyphicon-remove"></span></th>
 				</tr>
@@ -405,11 +496,13 @@ sub writeBeansTable()
 					beanId = rsBeans("Id")
 					beanName = dashIfNull(rsBeans("Name"))
 					beanIntent = dashIfNull(rsBeans("BeanIntentName"))
+					beanNote = dashIfNull(rsBeans("Note"))
 					%>
 					<tr data-bean-id="<%=beanId%>">
 						<td><%=e(beanId)%></td>
 						<td><%=e(beanName)%></td>
 						<td><%=e(beanIntent)%></td>
+						<td class="hidden-xs"><%=e(beanNote)%></td>
 						<td><a href="/charts/pages/bean.asp?beanid=<%=e(beanId)%>">Edit</a></td>
 						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
 					</tr>
@@ -435,6 +528,7 @@ sub writeBeanData(byval beanId)
 			if not rsBean.eof then
 				beanIntentId = rsBean("BeanIntentId")
 				beanName = rsBean("Name")
+				beanNote = rsBean("Note")
 			end if
 			rsBean.close
 			set rsBean = nothing
@@ -442,6 +536,7 @@ sub writeBeanData(byval beanId)
 			beanId = "-"
 			beanIntentId = -1
 			beanName = ""
+			beanNote = ""
 		end if	
 		%>
 		<div class="col-xs-12">
@@ -477,6 +572,12 @@ sub writeBeanData(byval beanId)
 		</div>
 		<div class="col-xs-12">
 			<div class="form-group">
+				<label>Note</label>
+				<input class="form-control" type="text" data-for="beanNote" value="<%=e(beanNote)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group pull-right">
 				<button class="btn btn-primary btn-save">Save</button>
 				<button class="btn btn-default btn-back">Back</button>
 			</div>
