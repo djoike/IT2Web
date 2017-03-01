@@ -90,7 +90,7 @@
     		function bindEvents()
     		{
     			$('.main-secondary-roast .btn.close-button').off('click').on('click',function(){endAddRoast($('.main-secondary-roast').find('.resultcontainer'))});
-    			$('.btn-save').off('click').on('click',function(){saveBeanAndRoastIntent(__roastId)});
+    			$('.btn-save').off('click').on('click',saveRoast);
     			$('.btn-back').off('click').on('click',function(){window.history.back()});
     			$('.main-roast .btn.refresh-button').off('click').on('click',function(){loadRoast($('.main-roast').find('.resultcontainer'),__roastId,bindEvents)});
     			$('.main-roast-graph .btn.add-button').off('click').on('click',function(){startAddRoast($('.main-secondary-roast').find('.resultcontainer'))});
@@ -99,6 +99,15 @@
     			$('.btn-rotate').on('click',incrementRotation);
     			$('.btn-upload').on('click',startUpload);
     			$('.btn-delete').on('click',deletePicture);
+    		}
+    		function saveRoast()
+    		{
+    			$('.btn-save').slideUp();
+    			saveBeanAndRoastIntent(__roastId, handleRoastSaved)
+    		}
+    		function handleRoastSaved()
+    		{
+				$('.btn-save').slideDown();
     		}
     	</script>
 <!--#include virtual="/charts/includes/foot.asp"-->

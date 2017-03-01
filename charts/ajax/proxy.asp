@@ -24,7 +24,8 @@ if f&""<>"" then
 			roastId = int(request.querystring("roastId"))
 			beanId = int(request.querystring("beanId"))
 			roastIntentId = int(request.querystring("roastIntentId"))
-			call saveRoast(roastId, beanId, roastIntentId)
+			rawBeanWeight = int(request.querystring("rawBeanWeight"))
+			call saveRoast(roastId, beanId, roastIntentId, rawBeanWeight)
 		case "writeBeansTable"
 			call writeBeansTable()
 		case "writeBean"
@@ -39,12 +40,55 @@ if f&""<>"" then
 		case "saveBean"
 			beanId = int(request.querystring("beanId"))
 			beanName = request.querystring("beanName")
+			beanPrice = int(request.querystring("beanPrice"))
 			beanIntentId = int(request.querystring("beanIntentId"))
 			beanNote = request.querystring("beanNote")
-			call saveBean(beanId, beanName, beanIntentId, beanNote)
+			beanOwnerId = int(request.querystring("beanOwnerId"))
+			beanSupplierId = int(request.querystring("beanSupplierId"))
+			beanLocationId = int(request.querystring("beanLocationId"))
+			beanAmountPurchased = int(request.querystring("beanAmountPurchased"))
+			beanAmountAdjustment = int(request.querystring("beanAmountAdjustment"))
+			beanPurchaseDate = request.querystring("beanPurchaseDate")
+			call saveBean(beanId, beanName, beanPrice, beanIntentId, beanNote, beanOwnerId, beanSupplierId, beanLocationId, beanAmountPurchased, beanAmountAdjustment, beanPurchaseDate)
 		case "deletePicture"
 			roastId = int(request.querystring("roastId"))
 			call deletePicture(roastId)
+		case "writeBeanOwnersTable"
+			call writeBeanOwnersTable()
+		case "writeBeanOwner"
+			beanOwnerId = int(request.querystring("beanOwnerId"))
+			call writeBeanOwner(beanOwnerId)
+		case "deleteBeanOwner"
+			beanOwnerId = int(request.querystring("beanOwnerId"))
+			call deleteBeanOwner(beanOwnerId)
+		case "saveBeanOwner"
+			beanOwnerId = int(request.querystring("beanOwnerId"))
+			beanOwnerName = request.querystring("beanOwnerName")
+			call saveBeanOwner(beanOwnerId, beanOwnerName)
+		case "writeLocationsTable"
+			call writeLocationsTable()
+		case "writeLocation"
+			locationId = int(request.querystring("locationId"))
+			call writeLocation(locationId)
+		case "deleteLocation"
+			locationId = int(request.querystring("locationId"))
+			call deleteLocation(locationId)
+		case "saveLocation"
+			locationId = int(request.querystring("locationId"))
+			locationName = request.querystring("locationName")
+			call saveLocation(locationId, locationName)
+		case "writeSuppliersTable"
+			call writeSuppliersTable()
+		case "writeSupplier"
+			supplierId = int(request.querystring("supplierId"))
+			call writeSupplier(supplierId)
+		case "deleteSupplier"
+			supplierId = int(request.querystring("supplierId"))
+			call deleteSupplier(supplierId)
+		case "saveSupplier"
+			supplierId = int(request.querystring("supplierId"))
+			supplierName = request.querystring("supplierName")
+			call saveSupplier(supplierId, supplierName)
 	end select
 end if
 %>

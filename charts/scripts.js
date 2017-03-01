@@ -82,10 +82,11 @@ function toggleMaximizePanel(event,elmTarget)
 	}
 }
 
-function saveBeanAndRoastIntent(roastId)
+function saveBeanAndRoastIntent(roastId, callback)
 {
 	var beanId = $('[data-for="beanId"]').val();
 	var roastIntentId = $('[data-for="roastIntentId"]').val();
+	var rawBeanWeight = $('[data-for="rawBeanWeight"]').val();
 
 	function handleRoastSaved(data)
 	{
@@ -95,19 +96,39 @@ function saveBeanAndRoastIntent(roastId)
 
 	$.ajax({
 	  url: '/charts/ajax/proxy.asp',
-	  data: {function: "saveRoast",roastId: roastId, beanId: beanId, roastIntentId: roastIntentId},
-	  success: handleRoastSaved
+	  data: {function: "saveRoast",roastId: roastId, beanId: beanId, roastIntentId: roastIntentId, rawBeanWeight: rawBeanWeight},
+	  success: callback
 	});
 }
 function saveBeanAndBeanIntent(beanId, callback)
 {
 	var beanName = $('[data-for="beanName"]').val();
+	var beanPrice = $('[data-for="beanPrice"]').val();
 	var beanIntentId = $('[data-for="beanIntentId"]').val();
 	var beanNote = $('[data-for="beanNote"]').val();
+	var beanOwnerId = $('[data-for="beanOwnerId"]').val();
+	var beanSupplierId = $('[data-for="beanSupplierId"]').val();
+	var beanLocationId = $('[data-for="beanLocationId"]').val();
+	var beanAmountPurchased = $('[data-for="beanAmountPurchased"]').val();
+	var beanAmountAdjustment = $('[data-for="beanAmountAdjustment"]').val();
+	var beanPurchaseDate = $('[data-for="beanPurchaseDate"]').val();
 
 	$.ajax({
 	  url: '/charts/ajax/proxy.asp',
-	  data: {function: "saveBean",beanId: beanId, beanName: beanName, beanIntentId: beanIntentId,beanNote: beanNote},
+	  data: {
+		  		function: "saveBean",
+		  		beanId: beanId,
+		  		beanName: beanName,
+		  		beanPrice: beanPrice,
+		  		beanIntentId: beanIntentId,
+		  		beanNote: beanNote,
+		  		beanOwnerId: beanOwnerId,
+		  		beanSupplierId: beanSupplierId,
+		  		beanLocationId: beanLocationId,
+		  		beanAmountPurchased: beanAmountPurchased,
+		  		beanAmountAdjustment: beanAmountAdjustment,
+		  		beanPurchaseDate: beanPurchaseDate
+	  		},
 	  success: callback
 	});
 }
@@ -312,14 +333,173 @@ function deletePicture()
 	}
 }
 
+////////////////////////////////////////////////////////////////////////////
+// BEAN OWNERS /////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+function loadBeanOwners(elmTarget, callback)
+{
+	function handleBeanOwnersTableLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
 
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeBeanOwnersTable"},
+	  success: handleBeanOwnersTableLoaded,
+	  dataType: 'html'
+	});
+}
 
+function loadBeanOwner(elmTarget, beanOwnerId, callback)
+{
+	function handleBeanOwnerLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
 
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeBeanOwner",beanOwnerId: beanOwnerId},
+	  success: handleBeanOwnerLoaded,
+	  dataType: 'html'
+	});
+}
 
+function deleteBeanOwner(beanOwnerId, callback)
+{
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "deleteBeanOwner",beanOwnerId: beanOwnerId},
+	  success: callback
+	});
+}
+function saveBeanOwner(beanOwnerId, callback)
+{
+	var beanOwnerName = $('[data-for="beanOwnerName"]').val();
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "saveBeanOwner",beanOwnerId: beanOwnerId, beanOwnerName: beanOwnerName},
+	  success: callback
+	});
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+// LOCATIONS ///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+function loadLocations(elmTarget, callback)
+{
+	function handleLocationsTableLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
 
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeLocationsTable"},
+	  success: handleLocationsTableLoaded,
+	  dataType: 'html'
+	});
+}
 
+function loadLocation(elmTarget, locationId, callback)
+{
+	function handleLocationLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
 
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeLocation",locationId: locationId},
+	  success: handleLocationLoaded,
+	  dataType: 'html'
+	});
+}
+
+function deleteLocation(locationId, callback)
+{
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "deleteLocation",locationId: locationId},
+	  success: callback
+	});
+}
+function saveLocation(locationId, callback)
+{
+	var locationName = $('[data-for="locationName"]').val();
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "saveLocation",locationId: locationId, locationName: locationName},
+	  success: callback
+	});
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+// SUPPLIERS ///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+function loadSuppliers(elmTarget, callback)
+{
+	function handleSuppliersTableLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
+
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeSuppliersTable"},
+	  success: handleSuppliersTableLoaded,
+	  dataType: 'html'
+	});
+}
+
+function loadSupplier(elmTarget, supplierId, callback)
+{
+	function handleSupplierLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
+
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeSupplier",supplierId: supplierId},
+	  success: handleSupplierLoaded,
+	  dataType: 'html'
+	});
+}
+
+function deleteSupplier(supplierId, callback)
+{
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "deleteSupplier",supplierId: supplierId},
+	  success: callback
+	});
+}
+function saveSupplier(supplierId, callback)
+{
+	var supplierName = $('[data-for="supplierName"]').val();
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "saveSupplier",supplierId: supplierId, supplierName: supplierName},
+	  success: callback
+	});
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 
 

@@ -37,13 +37,13 @@ function getRoastsSQL(byval roastId, byval minimumLogCount)
 	end if
 	strSQL = "SELECT Roast.Id, Roast.StartTime, Roast.EndTime, Profile.Name AS ProfileName, Roast.ManualControlStartTime,"&_
 				" COUNT(DISTINCT RoastLog.Id) AS LogCount, DATEDIFF(ss, Roast.StartTime, Roast.EndTime) AS Duration, Bean.Name AS BeanName, Bean.Id AS BeanId,"&_
-				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName"&_
+				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight"&_
 				" FROM Roast INNER JOIN"&_
 				" RoastLog ON Roast.Id = RoastLog.RoastId LEFT OUTER JOIN"&_
 				" RoastIntent ON Roast.RoastIntentId = RoastIntent.Id LEFT OUTER JOIN"&_
 				" Bean ON Roast.BeanId = Bean.Id AND Bean.Active = 1 LEFT OUTER JOIN"&_
 				" Profile ON Roast.ProfileId = Profile.Id"&_
-				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName"&_
+				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight"&_
 				" HAVING (Roast.Active = 1) AND (COUNT(DISTINCT RoastLog.Id) > "&minimumLogCount&")"& strWhereSQL &_
 				" ORDER BY Roast.Id DESC"
 	getRoastsSQL = strSQL
@@ -118,8 +118,20 @@ function getBeansSQL(byval beanId)
 		beanId = int(beanId)
 		strWhereSQL = " AND (Bean.Id = "& beanId &")"
 	end if
-	getBeansSQL = "SELECT Bean.Id, Bean.Name, BeanIntent.Id AS BeanIntentId, BeanIntent.Name AS BeanIntentName, Bean.Note"&_
+	getBeansSQL = "SELECT Bean.Id, Bean.Name, BeanIntent.Id AS BeanIntentId, BeanIntent.Name AS BeanIntentName,"&_
+					" Bean.Note, BeanSupplier.Id AS BeanSupplierId, BeanSupplier.Name AS BeanSupplierName,"&_ 
+					" BeanOwner.Id AS BeanOwnerId, BeanOwner.Name AS BeanOwnerName, BeanLocation.Id AS BeanLocationId,"&_
+					" BeanLocation.Name AS BeanLocationName, Bean.Price, Bean.AmountPurchased, Bean.AmountAdjustment,"&_
+					" Bean.PurchaseDate,"&_
+					" ((Bean.AmountPurchased + Bean.AmountAdjustment) - "&_
+						" (SELECT SUM(RawBeanWeight) AS AmountRoasted"&_
+						" FROM Roast"&_
+						" WHERE (BeanId = Bean.Id)))"&_
+					" AS AmountRemaining"&_
 					" FROM Bean LEFT OUTER JOIN"&_
+					" BeanLocation ON Bean.BeanLocationId = BeanLocation.Id AND BeanLocation.Active = 1 LEFT OUTER JOIN"&_
+					" BeanOwner ON Bean.BeanOwnerId = BeanOwner.Id AND BeanOwner.Active = 1 LEFT OUTER JOIN"&_
+					" BeanSupplier ON Bean.BeanSupplierId = BeanSupplier.Id AND BeanSupplier.Active = 1 LEFT OUTER JOIN"&_
 					" BeanIntent ON Bean.BeanIntentId = BeanIntent.Id"&_
 					" WHERE (Bean.Active = 1)" & strWhereSQL &_
 					" ORDER BY Bean.Name"
@@ -141,7 +153,7 @@ function getBeanIntentsSQL(byval intentId)
 	getBeanIntentsSQL = "SELECT Id, Name FROM BeanIntent" & strWhereSQL & " ORDER BY Name"
 end function
 
-function saveRoast(byval roastId, byval beanId, byval roastIntentId)
+function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBeanWeight)
 	roastId = int(roastId)
 	beanId = int(beanId)
 	if beanId = 0 then
@@ -151,24 +163,48 @@ function saveRoast(byval roastId, byval beanId, byval roastIntentId)
 	if roastIntentId = 0 then
 		roastIntentId = "NULL"
 	end if
+	rawBeanWeight = int(rawBeanWeight)
 
-	strSQL = "UPDATE Roast SET BeanId = " & beanId & ", RoastIntentId = " & roastIntentId & " WHERE Id = " & roastId
+	strSQL = "UPDATE Roast SET BeanId = " & beanId & ", RoastIntentId = " & roastIntentId & ", RawBeanWeight = "&rawBeanWeight&" WHERE Id = " & roastId
 	conn.execute(strSQL)
 end function
 
-function saveBean(byval beanId, byval beanName, byval beanIntentId, byval beanNote)
+function saveBean(byval beanId, byval beanName, byval beanPrice, byval beanIntentId, byval beanNote, byval beanOwnerId, byval beanSupplierId, byval beanLocationId, byval beanAmountPurchased, byval beanAmountAdjustment, byval beanPurchaseDate)
 	beanId = int(beanId)
+	beanPrice = int(beanPrice)
 	beanName = replace(beanName&"","'","''")
 	beanNote = replace(beanNote&"","'","''")
+	beanOwnerId = int(beanOwnerId)
+	beanSupplierId = int(beanSupplierId)
+	beanLocationId = int(beanLocationId)
+	beanAmountPurchased = int(beanAmountPurchased)
+	beanAmountAdjustment = int(beanAmountAdjustment)
+	beanPurchaseDate = replace(beanPurchaseDate&"","'","''")
+
+	if isDate(beanPurchaseDate) then
+		beanPurchaseDate = "'"&beanPurchaseDate&"'"
+	else
+		beanPurchaseDate = "NULL"
+	end if
 
 	if beanIntentId = 0 then
 		beanIntentId = "NULL"
 	end if
+	if beanOwnerId = 0 then
+		beanOwnerId = "NULL"
+	end if
+	if beanSupplierId = 0 then
+		beanSupplierId = "NULL"
+	end if
+	if beanLocationId = 0 then
+		beanLocationId = "NULL"
+	end if
 
 	if beanId > 0 then
-		strSQL = "UPDATE Bean SET Name = '" & beanName & "', BeanIntentId = " & beanIntentId & ", Note = '" & beanNote & "' WHERE Id = " & beanId
+		strSQL = "UPDATE Bean SET Name = '" & beanName & "', Price = "&beanPrice&", BeanIntentId = " & beanIntentId & ", Note = '" & beanNote & "', BeanOwnerId = "&beanOwnerId&" , BeanSupplierId = "&beanSupplierId&" , BeanLocationId = "&beanLocationId&","&_
+			" AmountPurchased = "&beanAmountPurchased&", AmountAdjustment = "&beanAmountAdjustment&", PurchaseDate = "&beanPurchaseDate&" WHERE Id = " & beanId
 	else
-		strSQL = "INSERT INTO Bean (Name, BeanIntentId, Note) VALUES ('"&beanName&"',"&beanIntentId&",'"&beanNote&"')"
+		strSQL = "INSERT INTO Bean (Name, Price, BeanIntentId, Note, BeanOwnerId, BeanSupplierId, BeanLocationId,beanAmountPurchased, beanAmountAdjustment, beanPurchaseDate) VALUES ('"&beanName&"',"&beanPrice&","&beanIntentId&",'"&beanNote&"',"&beanOwnerId&","&beanSupplierId&","&beanLocationId&","&beanAmountPurchased&","&beanAmountAdjustment&","&beanPurchaseDate&")"
 	end if
 	conn.execute(strSQL)
 end function
@@ -223,6 +259,7 @@ sub writeRoastsTable(byval strRoastIds)
 				<th class="hidden-xs">Manual</th>
 				<th class="">Bean</th>
 				<th class="hidden-xs">Intent</th>
+				<th class="hidden-xs">Amount</th>
 				<th><%if writePicker then%>Add<%else%>View<%end if%></th>
 				<%if not writePicker then%><th><span class="glyphicon glyphicon-remove"></span></th><%end if%>
 			</tr>
@@ -270,6 +307,8 @@ sub writeRoastsTable(byval strRoastIds)
 
 				roastIntent = dashIfNull(rsRoasts("RoastIntent"))
 
+				rawBeanWeight = int(rsRoasts("RawBeanWeight"))
+
 				alreadyPicked = writePicker AND instr(","&strRoastIds&",",","&roastID&",")>0
 				%>
 				<tr data-roast-id="<%=roastID%>">
@@ -281,6 +320,7 @@ sub writeRoastsTable(byval strRoastIds)
 					<td class="hidden-xs"><%=roastManualControlStarted%></td>
 					<td class=""><%=e(roastBean)%></td>
 					<td class="hidden-xs"><%=e(roastIntent)%></td>
+					<td class="hidden-xs"><%=e(rawBeanWeight)%> g</td>
 					<td class="view-column <%if alreadyPicked then%>picked<%end if%>">
 						<span>Added</span>
 						<a href="<%if writePicker then%>javascript:void(0);<%else%>/charts/pages/roast.asp?roastid=<%=e(roastID)%><%end if%>"><%if writePicker then%>Add<%else%>View<%end if%></a>
@@ -354,6 +394,8 @@ sub writeRoastData(byval roastId)
 
 			roastBeanId = rsRoasts("BeanId")
 			roastIntentId = rsRoasts("RoastIntentId")
+
+			rawBeanWeight = int(rsRoasts("RawBeanWeight"))
 			%>
 			<div class="col-xs-12">
 				<div class="form-group">
@@ -409,6 +451,12 @@ sub writeRoastData(byval roastId)
 						set rsIntents = nothing
 						%>
 					</select>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label>Raw bean weight (gram)</label>
+					<input type="text" class="form-control" data-for="rawBeanWeight" value="<%=e(rawBeanWeight)%>" pattern="\d*" />
 				</div>
 			</div>
 			<div class="col-xs-12">
@@ -485,6 +533,7 @@ sub writeBeansTable()
 					<th>ID</th>
 					<th>Name</th>
 					<th>Intent</th>
+					<th>Remaining</th>
 					<th class="hidden-xs">Note</th>
 					<th>Edit</th>
 					<th><span class="glyphicon glyphicon-remove"></span></th>
@@ -496,12 +545,14 @@ sub writeBeansTable()
 					beanId = rsBeans("Id")
 					beanName = dashIfNull(rsBeans("Name"))
 					beanIntent = dashIfNull(rsBeans("BeanIntentName"))
+					beanAmount = int(rsBeans("AmountRemaining"))
 					beanNote = dashIfNull(rsBeans("Note"))
 					%>
 					<tr data-bean-id="<%=beanId%>">
 						<td><%=e(beanId)%></td>
 						<td><%=e(beanName)%></td>
 						<td><%=e(beanIntent)%></td>
+						<td><%=e(beanAmount)%> g</td>
 						<td class="hidden-xs"><%=e(beanNote)%></td>
 						<td><a href="/charts/pages/bean.asp?beanid=<%=e(beanId)%>">Edit</a></td>
 						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
@@ -528,7 +579,19 @@ sub writeBeanData(byval beanId)
 			if not rsBean.eof then
 				beanIntentId = rsBean("BeanIntentId")
 				beanName = rsBean("Name")
+				beanPurchaseDate = rsBean("PurchaseDate")
 				beanNote = rsBean("Note")
+				beanOwnerId = rsBean("BeanOwnerId")
+				beanLocationId = rsBean("BeanLocationId")
+				beanSupplierId = rsBean("BeanSupplierId")
+				beanAmountPurchased = rsBean("AmountPurchased")
+				beanAmountAdjustment = rsBean("AmountAdjustment")
+				beanPrice = rsBean("Price")
+				if beanPrice&""<>"" then
+					beanPrice = int(beanPrice)
+				else
+					beanPrice = 0
+				end if
 			end if
 			rsBean.close
 			set rsBean = nothing
@@ -536,7 +599,14 @@ sub writeBeanData(byval beanId)
 			beanId = "-"
 			beanIntentId = -1
 			beanName = ""
+			beanPurchaseDate = now()
 			beanNote = ""
+			beanOwnerId = -1
+			beanLocationId = -1
+			beanSupplierId = -1
+			beanAmountPurchased = 0
+			beanAmountAdjustment = 0
+			beanPrice = 0
 		end if	
 		%>
 		<div class="col-xs-12">
@@ -549,6 +619,30 @@ sub writeBeanData(byval beanId)
 			<div class="form-group">
 				<label>Name</label>
 				<input type="text" class="form-control" data-for="beanName" value="<%=e(beanName)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Purchase date</label>
+				<input type="text" class="form-control" data-for="beanPurchaseDate" value="<%=e(beanPurchaseDate)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Price (per 1kg)</label>
+				<input type="text" class="form-control" data-for="beanPrice" value="<%=e(beanPrice)%>" pattern="\d*" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Purchased amount (gram)</label>
+				<input type="text" class="form-control" data-for="beanAmountPurchased" value="<%=e(beanAmountPurchased)%>" pattern="\d*" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Amount adjustment (gram)</label>
+				<input type="text" class="form-control" data-for="beanAmountAdjustment" value="<%=e(beanAmountAdjustment)%>" pattern="\d*" />
 			</div>
 		</div>
 		<div class="col-xs-12">
@@ -572,6 +666,63 @@ sub writeBeanData(byval beanId)
 		</div>
 		<div class="col-xs-12">
 			<div class="form-group">
+				<label>Owner</label>
+				<select class="form-control" data-for="beanOwnerId">
+					<option value="0">-</option>
+					<%
+					set rsOwners = conn.execute(getBeanOwnersSQL(-1))
+					do while not rsOwners.eof
+						ownerId = rsOwners("Id")
+						ownerName = rsOwners("Name")
+						%><option value="<%=int(ownerId)%>"<%if ownerId = beanOwnerId then%> selected<%end if%>><%=e(ownerName)%></option><%
+						rsOwners.MoveNext
+					loop
+					rsOwners.close
+					set rsOwners = nothing
+					%>
+				</select>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Supplier</label>
+				<select class="form-control" data-for="beanSupplierId">
+					<option value="0">-</option>
+					<%
+					set rsSuppliers = conn.execute(getSuppliersSQL(-1))
+					do while not rsSuppliers.eof
+						supplierId = rsSuppliers("Id")
+						supplierName = rsSuppliers("Name")
+						%><option value="<%=int(supplierId)%>"<%if supplierId = beanSupplierId then%> selected<%end if%>><%=e(supplierName)%></option><%
+						rsSuppliers.MoveNext
+					loop
+					rsSuppliers.close
+					set rsSuppliers = nothing
+					%>
+				</select>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Location</label>
+				<select class="form-control" data-for="beanLocationId">
+					<option value="0">-</option>
+					<%
+					set rsLocations = conn.execute(getLocationsSQL(-1))
+					do while not rsLocations.eof
+						locationId = rsLocations("Id")
+						locationName = rsLocations("Name")
+						%><option value="<%=int(locationId)%>"<%if locationId = beanLocationId then%> selected<%end if%>><%=e(locationName)%></option><%
+						rsLocations.MoveNext
+					loop
+					rsLocations.close
+					set rsLocations = nothing
+					%>
+				</select>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
 				<label>Note</label>
 				<input class="form-control" type="text" data-for="beanNote" value="<%=e(beanNote)%>" />
 			</div>
@@ -585,4 +736,329 @@ sub writeBeanData(byval beanId)
 	</div>
 	<%
 end sub
+
+
+'/////////////////////////////////////////////////////////////////////////////////////
+'// Bean Owners //////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+function getBeanOwnersSQL(byval beanOwnerId)
+	if beanOwnerId > -1 then
+		beanOwnerId = int(beanOwnerId)
+		strWhereSQL = " AND (Id = "& beanOwnerId &")"
+	end if
+	getBeanOwnersSQL = "SELECT Id, Name FROM BeanOwner WHERE (Active = 1)" & strWhereSQL & " ORDER BY Name"
+end function
+
+sub writeBeanOwnersTable()
+	set rsBeanOwners = conn.execute(getBeanOwnersSQL(-1))
+	if not rsBeanOwners.eof then
+		%>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Edit</th>
+					<th><span class="glyphicon glyphicon-remove"></span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<%
+				do while not rsBeanOwners.eof
+					beanOwnerId = rsBeanOwners("Id")
+					beanOwnerName = dashIfNull(rsBeanOwners("Name"))
+					%>
+					<tr data-bean-owner-id="<%=beanOwnerId%>">
+						<td><%=e(beanOwnerId)%></td>
+						<td><%=e(beanOwnerName)%></td>
+						<td><a href="/charts/pages/beanowner.asp?beanOwnerid=<%=e(beanOwnerId)%>">Edit</a></td>
+						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
+					</tr>
+					<%
+					rsBeanOwners.Movenext
+				loop
+				%>
+			</tbody>
+		</table>
+		<%
+	end if
+	rsBeanOwners.close
+	set rsBeanOwners = nothing
+end sub
+
+sub writeBeanOwner(byval beanOwnerId)
+	beanOwnerId = int(beanOwnerId)
+	%>
+	<div class="bean-owner-data-list clearfix">
+		<%
+		if beanOwnerId > 0 then
+			set rsBeanOwner = conn.execute(getBeanOwnersSQL(beanOwnerId))
+			if not rsBeanOwner.eof then
+				beanOwnerName = rsBeanOwner("Name")
+			end if
+			rsBeanOwner.close
+			set rsBeanOwner = nothing
+		else
+			beanOwnerId = "-"
+			beanOwnerName = ""
+		end if	
+		%>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Id</label>
+				<p class="form-control-static"><%=e(beanOwnerId)%></p>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Name</label>
+				<input type="text" class="form-control" data-for="beanOwnerName" value="<%=e(beanOwnerName)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group pull-right">
+				<button class="btn btn-primary btn-save">Save</button>
+				<button class="btn btn-default btn-back">Back</button>
+			</div>
+		</div>
+	</div>
+	<%
+end sub
+
+function deleteBeanOwner(byval beanOwnerId)
+	beanOwnerId = int(beanOwnerId)
+	strSQL = "UPDATE BeanOwner SET Active = 0 WHERE Id = " & beanOwnerId
+	conn.execute(strSQL)
+end function
+
+function saveBeanOwner(byval beanOwnerId, byval beanOwnerName)
+	beanOwnerId = int(beanOwnerId)
+	beanOwnerName = replace(beanOwnerName&"","'","''")
+
+	if beanOwnerId > 0 then
+		strSQL = "UPDATE BeanOwner SET Name = '" & beanOwnerName & "' WHERE Id = " & beanOwnerId
+	else
+		strSQL = "INSERT INTO BeanOwner (Name) VALUES ('"&beanOwnerName&"')"
+	end if
+	conn.execute(strSQL)
+end function
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+
+'/////////////////////////////////////////////////////////////////////////////////////
+'// Locations ////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+function getLocationsSQL(byval locationId)
+	if locationId > -1 then
+		locationId = int(locationId)
+		strWhereSQL = " AND (Id = "& locationId &")"
+	end if
+	getLocationsSQL = "SELECT Id, Name FROM BeanLocation WHERE (Active = 1)" & strWhereSQL & " ORDER BY Name"
+end function
+
+sub writeLocationsTable()
+	set rsLocations = conn.execute(getLocationsSQL(-1))
+	if not rsLocations.eof then
+		%>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Edit</th>
+					<th><span class="glyphicon glyphicon-remove"></span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<%
+				do while not rsLocations.eof
+					locationId = rsLocations("Id")
+					locationName = dashIfNull(rsLocations("Name"))
+					%>
+					<tr data-location-id="<%=locationId%>">
+						<td><%=e(locationId)%></td>
+						<td><%=e(locationName)%></td>
+						<td><a href="/charts/pages/location.asp?locationid=<%=e(locationId)%>">Edit</a></td>
+						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
+					</tr>
+					<%
+					rsLocations.Movenext
+				loop
+				%>
+			</tbody>
+		</table>
+		<%
+	end if
+	rsLocations.close
+	set rsLocations = nothing
+end sub
+
+sub writeLocation(byval locationId)
+	locationId = int(locationId)
+	%>
+	<div class="location-data-list clearfix">
+		<%
+		if locationId > 0 then
+			set rsLocation = conn.execute(getLocationsSQL(locationId))
+			if not rsLocation.eof then
+				locationName = rsLocation("Name")
+			end if
+			rsLocation.close
+			set rsLocation = nothing
+		else
+			locationId = "-"
+			locationName = ""
+		end if	
+		%>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Id</label>
+				<p class="form-control-static"><%=e(locationId)%></p>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Name</label>
+				<input type="text" class="form-control" data-for="locationName" value="<%=e(locationName)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group pull-right">
+				<button class="btn btn-primary btn-save">Save</button>
+				<button class="btn btn-default btn-back">Back</button>
+			</div>
+		</div>
+	</div>
+	<%
+end sub
+
+function deleteLocation(byval locationId)
+	locationId = int(locationId)
+	strSQL = "UPDATE BeanLocation SET Active = 0 WHERE Id = " & locationId
+	conn.execute(strSQL)
+end function
+
+function saveLocation(byval locationId, byval locationName)
+	locationId = int(locationId)
+	locationName = replace(locationName&"","'","''")
+
+	if locationId > 0 then
+		strSQL = "UPDATE BeanLocation SET Name = '" & locationName & "' WHERE Id = " & locationId
+	else
+		strSQL = "INSERT INTO BeanLocation (Name) VALUES ('"&locationName&"')"
+	end if
+	conn.execute(strSQL)
+end function
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+
+'/////////////////////////////////////////////////////////////////////////////////////
+'// Suppliers ////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+function getSuppliersSQL(byval supplierId)
+	if supplierId > -1 then
+		supplierId = int(supplierId)
+		strWhereSQL = " AND (Id = "& supplierId &")"
+	end if
+	getSuppliersSQL = "SELECT Id, Name FROM BeanSupplier WHERE (Active = 1)" & strWhereSQL & " ORDER BY Name"
+end function
+
+sub writeSuppliersTable()
+	set rsSuppliers = conn.execute(getSuppliersSQL(-1))
+	if not rsSuppliers.eof then
+		%>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th>Edit</th>
+					<th><span class="glyphicon glyphicon-remove"></span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<%
+				do while not rsSuppliers.eof
+					supplierId = rsSuppliers("Id")
+					supplierName = dashIfNull(rsSuppliers("Name"))
+					%>
+					<tr data-supplier-id="<%=supplierId%>">
+						<td><%=e(supplierId)%></td>
+						<td><%=e(supplierName)%></td>
+						<td><a href="/charts/pages/supplier.asp?supplierid=<%=e(supplierId)%>">Edit</a></td>
+						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
+					</tr>
+					<%
+					rsSuppliers.Movenext
+				loop
+				%>
+			</tbody>
+		</table>
+		<%
+	end if
+	rsSuppliers.close
+	set rsSuppliers = nothing
+end sub
+
+sub writeSupplier(byval supplierId)
+	supplierId = int(supplierId)
+	%>
+	<div class="supplier-data-list clearfix">
+		<%
+		if supplierId > 0 then
+			set rsSupplier = conn.execute(getSuppliersSQL(supplierId))
+			if not rsSupplier.eof then
+				supplierName = rsSupplier("Name")
+			end if
+			rsSupplier.close
+			set rsSupplier = nothing
+		else
+			supplierId = "-"
+			supplierName = ""
+		end if	
+		%>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Id</label>
+				<p class="form-control-static"><%=e(supplierId)%></p>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Name</label>
+				<input type="text" class="form-control" data-for="supplierName" value="<%=e(supplierName)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group pull-right">
+				<button class="btn btn-primary btn-save">Save</button>
+				<button class="btn btn-default btn-back">Back</button>
+			</div>
+		</div>
+	</div>
+	<%
+end sub
+
+function deleteSupplier(byval supplierId)
+	supplierId = int(supplierId)
+	strSQL = "UPDATE BeanSupplier SET Active = 0 WHERE Id = " & supplierId
+	conn.execute(strSQL)
+end function
+
+function saveSupplier(byval supplierId, byval supplierName)
+	supplierId = int(supplierId)
+	supplierName = replace(supplierName&"","'","''")
+
+	if supplierId > 0 then
+		strSQL = "UPDATE BeanSupplier SET Name = '" & supplierName & "' WHERE Id = " & supplierId
+	else
+		strSQL = "INSERT INTO BeanSupplier (Name) VALUES ('"&supplierName&"')"
+	end if
+	conn.execute(strSQL)
+end function
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
 %>
