@@ -37,13 +37,13 @@ function getRoastsSQL(byval roastId, byval minimumLogCount)
 	end if
 	strSQL = "SELECT Roast.Id, Roast.StartTime, Roast.EndTime, Profile.Name AS ProfileName, Roast.ManualControlStartTime,"&_
 				" COUNT(DISTINCT RoastLog.Id) AS LogCount, DATEDIFF(ss, Roast.StartTime, Roast.EndTime) AS Duration, Bean.Name AS BeanName, Bean.Id AS BeanId,"&_
-				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight"&_
+				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight, Roast.FinancialOwnerId"&_
 				" FROM Roast INNER JOIN"&_
 				" RoastLog ON Roast.Id = RoastLog.RoastId LEFT OUTER JOIN"&_
 				" RoastIntent ON Roast.RoastIntentId = RoastIntent.Id LEFT OUTER JOIN"&_
-				" Bean ON Roast.BeanId = Bean.Id AND Bean.Active = 1 LEFT OUTER JOIN"&_
+				" Bean ON Roast.BeanId = Bean.Id LEFT OUTER JOIN"&_
 				" Profile ON Roast.ProfileId = Profile.Id"&_
-				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight"&_
+				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight, Roast.FinancialOwnerId"&_
 				" HAVING (Roast.Active = 1) AND (COUNT(DISTINCT RoastLog.Id) > "&minimumLogCount&")"& strWhereSQL &_
 				" ORDER BY Roast.Id DESC"
 	getRoastsSQL = strSQL
@@ -122,7 +122,7 @@ function getBeansSQL(byval beanId)
 					" Bean.Note, BeanSupplier.Id AS BeanSupplierId, BeanSupplier.Name AS BeanSupplierName,"&_ 
 					" BeanOwner.Id AS BeanOwnerId, BeanOwner.Name AS BeanOwnerName, BeanLocation.Id AS BeanLocationId,"&_
 					" BeanLocation.Name AS BeanLocationName, Bean.Price, Bean.AmountPurchased, Bean.AmountAdjustment,"&_
-					" Bean.PurchaseDate,"&_
+					" Bean.PurchaseDate, Bean.Active,"&_
 					" ((Bean.AmountPurchased + Bean.AmountAdjustment) - "&_
 						" (SELECT SUM(RawBeanWeight) AS AmountRoasted"&_
 						" FROM Roast"&_
@@ -133,7 +133,7 @@ function getBeansSQL(byval beanId)
 					" BeanOwner ON Bean.BeanOwnerId = BeanOwner.Id AND BeanOwner.Active = 1 LEFT OUTER JOIN"&_
 					" BeanSupplier ON Bean.BeanSupplierId = BeanSupplier.Id AND BeanSupplier.Active = 1 LEFT OUTER JOIN"&_
 					" BeanIntent ON Bean.BeanIntentId = BeanIntent.Id"&_
-					" WHERE (Bean.Active = 1)" & strWhereSQL &_
+					" WHERE (1 = 1)" & strWhereSQL &_
 					" ORDER BY Bean.Name"
 end function
 
@@ -153,7 +153,7 @@ function getBeanIntentsSQL(byval intentId)
 	getBeanIntentsSQL = "SELECT Id, Name FROM BeanIntent" & strWhereSQL & " ORDER BY Name"
 end function
 
-function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBeanWeight)
+function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBeanWeight, byval financialOwnerId)
 	roastId = int(roastId)
 	beanId = int(beanId)
 	if beanId = 0 then
@@ -163,9 +163,13 @@ function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBe
 	if roastIntentId = 0 then
 		roastIntentId = "NULL"
 	end if
+	financialOwnerId = int(financialOwnerId)
+	if financialOwnerId = 0 then
+		financialOwnerId = "NULL"
+	end if
 	rawBeanWeight = int(rawBeanWeight)
 
-	strSQL = "UPDATE Roast SET BeanId = " & beanId & ", RoastIntentId = " & roastIntentId & ", RawBeanWeight = "&rawBeanWeight&" WHERE Id = " & roastId
+	strSQL = "UPDATE Roast SET BeanId = " & beanId & ", RoastIntentId = " & roastIntentId & ", RawBeanWeight = "&rawBeanWeight&", FinancialOwnerId = "&financialOwnerId&" WHERE Id = " & roastId
 	conn.execute(strSQL)
 end function
 
@@ -394,6 +398,7 @@ sub writeRoastData(byval roastId)
 
 			roastBeanId = rsRoasts("BeanId")
 			roastIntentId = rsRoasts("RoastIntentId")
+			financialOwnerId = rsRoasts("FinancialOwnerId")
 
 			rawBeanWeight = int(rsRoasts("RawBeanWeight"))
 			%>
@@ -449,6 +454,25 @@ sub writeRoastData(byval roastId)
 						loop
 						rsIntents.close
 						set rsIntents = nothing
+						%>
+					</select>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
+					<label>Beneficiary</label>
+					<select class="form-control" data-for="financialOwnerId">
+						<option value="0">-</option>
+						<%
+						set rsOwners = conn.execute(getBeanOwnersSQL(-1))
+						do while not rsOwners.eof
+							ownerId = rsOwners("Id")
+							ownerName = rsOwners("Name")
+							%><option value="<%=int(ownerId)%>"<%if ownerId = financialOwnerId then%> selected<%end if%>><%=e(ownerName)%></option><%
+							rsOwners.MoveNext
+						loop
+						rsOwners.close
+						set rsOwners = nothing
 						%>
 					</select>
 				</div>
@@ -535,8 +559,9 @@ sub writeBeansTable()
 					<th>Intent</th>
 					<th>Remaining</th>
 					<th class="hidden-xs">Note</th>
+					<th class="hidden-xs">Active</th>
 					<th>Edit</th>
-					<th><span class="glyphicon glyphicon-remove"></span></th>
+					<th>Deactivate</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -547,13 +572,20 @@ sub writeBeansTable()
 					beanIntent = dashIfNull(rsBeans("BeanIntentName"))
 					beanAmount = int(rsBeans("AmountRemaining"))
 					beanNote = dashIfNull(rsBeans("Note"))
+					beanActive = rsBeans("Active")
 					%>
-					<tr data-bean-id="<%=beanId%>">
+					<tr data-bean-id="<%=beanId%>" class="<%if not beanActive then%>inactive<%end if%>">
 						<td><%=e(beanId)%></td>
 						<td><%=e(beanName)%></td>
 						<td><%=e(beanIntent)%></td>
 						<td><%=e(beanAmount)%> g</td>
 						<td class="hidden-xs"><%=e(beanNote)%></td>
+						<td class="hidden-xs">
+							<%if beanActive then%>
+								<span class="glyphicon glyphicon-ok"></span></td>
+							<%else%>
+								<span class="glyphicon glyphicon-remove"></span>
+							<%end if%>
 						<td><a href="/charts/pages/bean.asp?beanid=<%=e(beanId)%>">Edit</a></td>
 						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
 					</tr>
@@ -1061,4 +1093,75 @@ end function
 '/////////////////////////////////////////////////////////////////////////////////////
 '/////////////////////////////////////////////////////////////////////////////////////
 '/////////////////////////////////////////////////////////////////////////////////////
+
+sub writeStock()
+	pixelsPerKg = 200
+
+	strGetStock = "SELECT Id, Name, AmountPurchased, AmountPurchased + AmountAdjustment - "&_
+					" (SELECT SUM(RawBeanWeight) AS AmountRoasted"&_
+					" FROM Roast"&_
+					" WHERE (BeanId = Bean.Id)) AS AmountRemaining"&_
+					" FROM Bean"&_
+					" WHERE (Active = 1)"&_
+					" ORDER BY Name"
+	set rsStock = conn.execute(strGetStock)
+	do while not rsStock.eof
+		beanId = rsStock("Id")
+		beanName = rsStock("Name")
+		AmountPurchased = rsStock("AmountPurchased")
+		AmountRemaining = rsStock("AmountRemaining")
+
+		originalHeight = (pixelsPerKg * AmountPurchased) / 1000
+		remainingHeight = (pixelsPerKg * AmountRemaining) / 1000
+		%>
+		<div class="stock">
+			<div class="original" style="height:<%=originalHeight%>px;"></div>
+			<div class="remaining" style="height:<%=remainingHeight%>px;"></div>
+			<%=beanName %><br>
+			<%=AmountPurchased %><br>
+			<%=AmountRemaining %><br><br>
+		</div>
+		<%
+		rsStock.Movenext
+	loop
+	rsStock.close
+	set rsStock = nothing
+	%>
+	<div class="clearfix"></div>
+	<%
+end sub
 %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

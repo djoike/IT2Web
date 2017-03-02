@@ -25,7 +25,8 @@ if f&""<>"" then
 			beanId = int(request.querystring("beanId"))
 			roastIntentId = int(request.querystring("roastIntentId"))
 			rawBeanWeight = int(request.querystring("rawBeanWeight"))
-			call saveRoast(roastId, beanId, roastIntentId, rawBeanWeight)
+			financialOwnerId = int(request.querystring("financialOwnerId"))
+			call saveRoast(roastId, beanId, roastIntentId, rawBeanWeight, financialOwnerId)
 		case "writeBeansTable"
 			call writeBeansTable()
 		case "writeBean"
@@ -89,6 +90,8 @@ if f&""<>"" then
 			supplierId = int(request.querystring("supplierId"))
 			supplierName = request.querystring("supplierName")
 			call saveSupplier(supplierId, supplierName)
+		case "writeStock"
+			call writeStock()
 	end select
 end if
 %>

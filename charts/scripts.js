@@ -87,6 +87,7 @@ function saveBeanAndRoastIntent(roastId, callback)
 	var beanId = $('[data-for="beanId"]').val();
 	var roastIntentId = $('[data-for="roastIntentId"]').val();
 	var rawBeanWeight = $('[data-for="rawBeanWeight"]').val();
+	var financialOwnerId = $('[data-for="financialOwnerId"]').val();
 
 	function handleRoastSaved(data)
 	{
@@ -96,7 +97,7 @@ function saveBeanAndRoastIntent(roastId, callback)
 
 	$.ajax({
 	  url: '/charts/ajax/proxy.asp',
-	  data: {function: "saveRoast",roastId: roastId, beanId: beanId, roastIntentId: roastIntentId, rawBeanWeight: rawBeanWeight},
+	  data: {function: "saveRoast",roastId: roastId, beanId: beanId, roastIntentId: roastIntentId, rawBeanWeight: rawBeanWeight, financialOwnerId: financialOwnerId},
 	  success: callback
 	});
 }
@@ -144,6 +145,22 @@ function loadBeans(elmTarget, callback)
 	  url: '/charts/ajax/proxy.asp',
 	  data: {function: "writeBeansTable"},
 	  success: handleBeansTableLoaded,
+	  dataType: 'html'
+	});
+}
+
+function loadStock(elmTarget, callback)
+{
+	function handleStockLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
+
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeStock"},
+	  success: handleStockLoaded,
 	  dataType: 'html'
 	});
 }

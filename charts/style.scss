@@ -102,6 +102,9 @@ td {
 		}
 	}
 }
+tr.inactive td {
+	color:#c1c1c1;
+}
 
 .overlay {
 	position:fixed;
@@ -111,4 +114,24 @@ td {
 	left:0;
 	top:0;
 	z-index:9;
+}
+
+.stock {
+ width: 100px;
+ float:left;
+ position:relative;
+ .original {
+ 	background-color:#c1c1c1;
+ 	position:absolute;
+ 	bottom:0;
+ 	right:0;
+ 	width:30px;
+ }
+ .remaining {
+ 	background-color:lime;
+ 	position:absolute;
+	bottom:0;
+	right:0;
+	width:30px;
+ }
 }

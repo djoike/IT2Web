@@ -38,7 +38,7 @@
 
 							function bindEvents()
 							{
-								$('.btn.refresh-button').off('click').on('click',function(){loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents)});
+								$('.main-beans-list .btn.refresh-button').off('click').on('click',function(){loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents)});
 								$('.main-beans-list .btn.add-button').off('click').on('click',function(){window.location.href="/charts/pages/bean.asp"});
 								$('.main-beans-list .glyphicon-remove').off('click').on('click',prepareDeleteBean);
 							}
@@ -54,6 +54,44 @@
 
 					</div>
     			</div>
+				<div class="col-xs-12 main-stock-list">
+						<div class="panel panel-default">
+							<!-- Default panel contents -->
+							<div class="panel-heading">
+								Stock
+								<div class="pull-right">
+									<button class="btn btn-sm refresh-button">
+										<span class="glyphicon glyphicon-refresh"></span>
+									</button>
+									<button class="btn btn-sm maximize-button hidden-xs">
+										<span class="glyphicon glyphicon-resize-full"></span>
+									</button>
+								</div>
+							</div>
+
+							<div class="resultcontainer"><div class="loader"></div></div>
+							<script type="text/javascript">
+								$(function(){
+									firstLoadStock();
+									bindEventsStock();
+								});
+
+
+								function firstLoadStock()
+								{
+									//1. get roast table data
+									loadStock($('.main-stock-list').find('.resultcontainer'),bindEventsStock);
+								}
+
+								function bindEventsStock()
+								{
+									$('.main-stock-list .btn.refresh-button').off('click').on('click',function(){loadStock($('.main-stock-list').find('.resultcontainer'),bindEventsStock)});
+								}
+							</script>
+
+						</div>
+					</div>
+				</div>
     		</div>
     	</div>
 <!--#include virtual="/charts/includes/foot.asp"-->
