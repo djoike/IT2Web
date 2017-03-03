@@ -115,23 +115,52 @@ tr.inactive td {
 	top:0;
 	z-index:9;
 }
+.main-stock-list {
+	.resultcontainer {
+		.flexWrapper {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			justify-content: flex-start;
+			align-content: stretch;
+			align-items: flex-end;
+			padding:20px;
+		}
+	}
+}
 
 .stock {
- width: 100px;
- float:left;
- position:relative;
- .original {
- 	background-color:#c1c1c1;
- 	position:absolute;
- 	bottom:0;
- 	right:0;
- 	width:30px;
- }
- .remaining {
- 	background-color:lime;
- 	position:absolute;
-	bottom:0;
-	right:0;
-	width:30px;
- }
+    order: 0;
+    flex: 0 1 auto;
+    align-self: auto;
+    position:relative;
+    margin-left:2%;
+    margin-right:2%;
+	.original, .remaining {
+		position:absolute;
+		bottom:0;
+		left:0;
+		width:100%;
+		text-align:center;
+		color:#FFF;
+		color: #FFF;
+		padding-top: 12px;
+		font-size: 16px;
+	}
+	.original {
+	 	background-color:#c1c1c1;
+ 	}
+ 	.remaining {
+ 		background-color:#509481;
+ 		span {
+ 			position:absolute;
+ 			bottom:0;
+ 			left:0;
+ 			display:block;
+ 			text-align:center;
+ 			font-size:12px;
+ 			padding-bottom:10px;
+ 			width:100%;
+ 		}
+ 	}
 }

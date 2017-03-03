@@ -554,14 +554,14 @@ sub writeBeansTable()
 		<table class="table table-hover">
 			<thead>
 				<tr>
-					<th>ID</th>
+					<th class="hidden-xs">ID</th>
 					<th>Name</th>
-					<th>Intent</th>
-					<th>Remaining</th>
+					<th class="hidden-xs">Intent</th>
+					<th>Rem.</th>
 					<th class="hidden-xs">Note</th>
 					<th class="hidden-xs">Active</th>
 					<th>Edit</th>
-					<th>Deactivate</th>
+					<th><span class="glyphicon glyphicon-remove"></span></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -575,9 +575,9 @@ sub writeBeansTable()
 					beanActive = rsBeans("Active")
 					%>
 					<tr data-bean-id="<%=beanId%>" class="<%if not beanActive then%>inactive<%end if%>">
-						<td><%=e(beanId)%></td>
+						<td class="hidden-xs"><%=e(beanId)%></td>
 						<td><%=e(beanName)%></td>
-						<td><%=e(beanIntent)%></td>
+						<td class="hidden-xs"><%=e(beanIntent)%></td>
 						<td><%=e(beanAmount)%> g</td>
 						<td class="hidden-xs"><%=e(beanNote)%></td>
 						<td class="hidden-xs">
@@ -1095,39 +1095,52 @@ end function
 '/////////////////////////////////////////////////////////////////////////////////////
 
 sub writeStock()
-	pixelsPerKg = 200
-
-	strGetStock = "SELECT Id, Name, AmountPurchased, AmountPurchased + AmountAdjustment - "&_
-					" (SELECT SUM(RawBeanWeight) AS AmountRoasted"&_
-					" FROM Roast"&_
-					" WHERE (BeanId = Bean.Id)) AS AmountRemaining"&_
-					" FROM Bean"&_
-					" WHERE (Active = 1)"&_
-					" ORDER BY Name"
-	set rsStock = conn.execute(strGetStock)
-	do while not rsStock.eof
-		beanId = rsStock("Id")
-		beanName = rsStock("Name")
-		AmountPurchased = rsStock("AmountPurchased")
-		AmountRemaining = rsStock("AmountRemaining")
-
-		originalHeight = (pixelsPerKg * AmountPurchased) / 1000
-		remainingHeight = (pixelsPerKg * AmountRemaining) / 1000
-		%>
-		<div class="stock">
-			<div class="original" style="height:<%=originalHeight%>px;"></div>
-			<div class="remaining" style="height:<%=remainingHeight%>px;"></div>
-			<%=beanName %><br>
-			<%=AmountPurchased %><br>
-			<%=AmountRemaining %><br><br>
-		</div>
-		<%
-		rsStock.Movenext
-	loop
-	rsStock.close
-	set rsStock = nothing
 	%>
-	<div class="clearfix"></div>
+	<div class="flexWrapper">
+		<%
+		pixelsPerKg = 200
+
+		strGetStock = "SELECT Id, Name, AmountPurchased, AmountPurchased + AmountAdjustment - "&_
+						" (SELECT SUM(RawBeanWeight) AS AmountRoasted"&_
+						" FROM Roast"&_
+						" WHERE (BeanId = Bean.Id)) AS AmountRemaining"&_
+						" FROM Bean"&_
+						" WHERE (Active = 1)"&_
+						" ORDER BY Name"
+		set rsStock = conn.execute(strGetStock)
+		beanCount = 0
+		do while not rsStock.eof
+			beanCount = beanCount + 1
+			rsStock.MoveNext
+		loop
+		rsStock.MoveFirst
+		do while not rsStock.eof
+			beanId = rsStock("Id")
+			beanName = rsStock("Name")
+			AmountPurchased = rsStock("AmountPurchased")
+			AmountRemaining = rsStock("AmountRemaining")
+
+			originalHeight = (pixelsPerKg * AmountPurchased) / 1000
+			remainingHeight = 0
+			if AmountRemaining > 0 then
+				remainingHeight = (pixelsPerKg * AmountRemaining) / 1000
+			else
+				remainingHeight = 0
+			end if
+			width = int(100 / beanCount) - 4
+			%>
+			<div class="stock" style="width:<%=width%>%;height:<%=originalHeight%>px;">
+				<div class="original" style="height:<%=originalHeight%>px;"><%=AmountPurchased%>g</div>
+				<div class="remaining" style="height:<%=remainingHeight%>px;<%if remainingHeight = 0 then%>padding:0;<%end if%>"><%=AmountRemaining%>g<span><%=beanName%></span></div>
+			</div>
+			<%
+			rsStock.Movenext
+		loop
+		rsStock.close
+		set rsStock = nothing
+		%>
+		<div class="clearfix"></div>
+	</div>
 	<%
 end sub
 %>
