@@ -59,10 +59,41 @@ function getRoastLogSQL(byval roastIds)
 	getRoastLogSQL = strSQL
 end function
 
-function deleteBean(byval beanId)
+function deactivateBean(byval beanId)
 	beanId = int(beanId)
 	strSQL = "UPDATE Bean SET Active = 0 WHERE Id = " & beanId
 	conn.execute(strSQL)
+end function
+
+function activateBean(byval beanId)
+	beanId = int(beanId)
+	strSQL = "UPDATE Bean SET Active = 1 WHERE Id = " & beanId
+	conn.execute(strSQL)
+end function
+
+function getBeanStatus(byval beanId)
+	beanId = int(beanId)
+	returnVal = 0
+
+	strSQL = "SELECT Active FROM Bean WHERE Id = " & beanId
+	set rsActive = conn.execute(strSQL)
+	if not rsActive.eof then
+		if rsActive("Active") then
+			returnVal = 1
+		else
+			returnVal = -1
+		end if
+	end if
+	getBeanStatus = returnVal
+end function
+
+function handleBeanDelete(byval beanId)
+	beanStatus = getBeanStatus(beanId)
+	if beanStatus = 1 then
+		deactivateBean(beanId)
+	elseif beanStatus = -1 then
+		activateBean(beanId)
+	end if
 end function
 
 function deleteRoast(byval roastId)
@@ -674,7 +705,7 @@ sub writeBeanData(byval beanId)
 		<div class="col-xs-12">
 			<div class="form-group">
 				<label>Amount adjustment (gram)</label>
-				<input type="text" class="form-control" data-for="beanAmountAdjustment" value="<%=e(beanAmountAdjustment)%>" pattern="\d*" />
+				<input type="text" class="form-control" data-for="beanAmountAdjustment" value="<%=e(beanAmountAdjustment)%>" />
 			</div>
 		</div>
 		<div class="col-xs-12">

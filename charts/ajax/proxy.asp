@@ -34,7 +34,7 @@ if f&""<>"" then
 			call writeBeanData(beanId)
 		case "deleteBean"
 			beanId = int(request.querystring("beanId"))
-			call deleteBean(beanId)
+			call handleBeanDelete(beanId)
 		case "deleteRoast"
 			roastId = int(request.querystring("roastId"))
 			call deleteRoast(roastId)	

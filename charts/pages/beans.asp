@@ -47,7 +47,10 @@
 								var beanId = $(this).closest('[data-bean-id]').data('bean-id');
 								if(confirm("Are you sure you want to delete this bean?"))
 								{
-									deleteBean(beanId,function(){loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents)});
+									deleteBean(beanId,function(){
+										loadBeans($('.main-beans-list').find('.resultcontainer'),bindEvents);
+										loadStock($('.main-stock-list').find('.resultcontainer'),bindEventsStock);
+									});
 								}
 							}
 						</script>
