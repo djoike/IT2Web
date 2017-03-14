@@ -1174,6 +1174,142 @@ sub writeStock()
 	</div>
 	<%
 end sub
+
+sub writeBalanceTable()
+	strSQL = "SELECT CASE WHEN StartTime IS NULL THEN CreatedDate ELSE StartTime END AS LogDate, Roast.Id AS RoastId, CASE WHEN BeanOwner.Id IS NULL"&_
+				" THEN FinancialAdjustment.FinancialOwnerId ELSE BeanOwner.Id END AS BenefactorId,"&_
+				" CASE WHEN BeanOwner.Name IS NULL THEN BeanOwner_2.Name ELSE BeanOwner.Name END AS BenefactorName,"&_
+				" BeanOwner_1.Id AS OwnerId, BeanOwner_1.Name AS OwnerName, Roast.RawBeanWeight,"&_
+				" Bean.Price, FinancialAdjustment.Adjustment, Bean.Name AS BeanName, Bean.Id AS BeanId, FinancialAdjustment.Note AS AdjustmentNote"&_
+				" FROM FinancialAdjustment INNER JOIN"&_
+				" BeanOwner AS BeanOwner_2 ON FinancialAdjustment.FinancialOwnerId = BeanOwner_2.Id FULL OUTER JOIN"&_
+				" Roast INNER JOIN"&_
+				" BeanOwner ON Roast.FinancialOwnerId = BeanOwner.Id INNER JOIN"&_
+				" Bean ON Roast.BeanId = Bean.Id INNER JOIN"&_
+				" BeanOwner AS BeanOwner_1 ON Bean.BeanOwnerId = BeanOwner_1.Id"&_
+				" AND BeanOwner.Id <> BeanOwner_1.Id ON FinancialAdjustment.CreatedDate = Roast.StartTime AND FinancialAdjustment.Active = 1"&_
+				" ORDER BY LogDate"
+	set rsBalance = conn.execute(strSQL)
+
+	dim balanceArr(3)
+	balanceArr(0) = 0 'Not in use
+	balanceArr(1) = 0 'Shared
+	balanceArr(2) = 0 'LBE
+	balanceArr(2) = 0 'MOV
+
+	dim nameArr(3)
+	nameArr(0) = "" 'Not in use
+	nameArr(1) = "Shared"
+	nameArr(2) = "Lasse"
+	nameArr(3) = "Morten"
+
+	do while not rsBalance.eof
+		RoastId = rsBalance("roastId")
+		if RoastId&""<>"" then
+			' Basic premise here is that the SQL will only return records where the roaster is not the owner of the bean
+
+			roastDate = rsBalance("LogDate")
+			if isDate(roastDate) then
+				roastDate = cdate(roastDate)
+				roastDate = lz_1(day(roastDate)) &"-"& lz_1(month(roastDate)) & "-" & year(roastDate)
+			end if
+
+			roasterId = rsBalance("BenefactorId")
+			roasterName = rsBalance("BenefactorName")
+			ownerId = rsBalance("OwnerId")
+			ownerName = rsBalance("OwnerName")
+			beanId = rsBalance("BeanId")
+			beanName = rsBalance("BeanName")
+			rawBeanWeight = rsBalance("RawBeanWeight")
+			beanPrice = rsBalance("Price")
+			beanCostRaw = (rawBeanWeight * beanPrice) / 1000
+			beanCost = round(beanCostRaw,1)
+
+			beanAdjustmentRaw = 0
+			if roasterId = 1 then
+				'Shared is roasting someone else's coffee!!
+				beanAdjustmentRaw = beanCostRaw / 2
+
+				balanceArr(ownerId) = balanceArr(ownerId) + beanAdjustmentRaw
+				
+			elseif ownerId = 1 then
+				'Someone is roasting Shared's coffee!!
+				beanAdjustmentRaw = beanCostRaw / 2
+
+				balanceArr(roasterId) = balanceArr(roasterId) - beanAdjustmentRaw
+			else
+				'2 or 3 is roasting coffee from 2 or 3
+				beanAdjustmentRaw = beanCostRaw
+				
+				balanceArr(roasterId) = balanceArr(roasterId) - beanAdjustmentRaw
+			end if
+			beanAdjustment = round(beanAdjustmentRaw,1)
+			%>
+			<div class="balance-row">
+				<%=roastDate%> &mdash; <a href="beanowner.asp?beanownerid=<%=roasterId%>"><%=e(roasterName)%></a> roasted <%=rawBeanWeight%>g of <a href="beanowner.asp?beanownerid=<%=ownerId%>"><%=ownerName%></a>'s <a href="/charts/pages/bean.asp?beanid=<%=beanId%>"><%=beanName%></a> to the price of <b>DKK <%=formatNumber(beanCost)%></b> which results in an adjustment of <b>DKK -<%=formatNumber(beanAdjustment)%></b>
+			</div>
+			<%
+		else
+			
+			roastDate = rsBalance("LogDate")
+			if isDate(roastDate) then
+				roastDate = cdate(roastDate)
+				roastDate = lz_1(day(roastDate)) &"-"& lz_1(month(roastDate)) & "-" & year(roastDate)
+			end if
+
+			roasterId = rsBalance("BenefactorId")
+			roasterName = rsBalance("BenefactorName")
+			adjustmentValue = rsBalance("Adjustment")
+			adjustmentNote = rsBalance("AdjustmentNote")
+			
+			balanceArr(roasterId) = balanceArr(roasterId) + adjustmentValue
+			%>
+			<div class="balance-row">
+				<%=roastDate%> &mdash; An adjustment was made to <a href="beanowner.asp?beanownerid=<%=roasterId%>"><%=e(roasterName)%></a>'s balance in the amount of <b>DKK <%=formatNumber(adjustmentValue)%></b> with the following note: <i><%=adjustmentNote%></i>
+			</div>
+			<%
+		end if
+		
+		rsBalance.MoveNext
+	loop
+	rsBalance.close
+	set rsBalance = nothing
+	
+	if balanceArr(2) > balanceArr(3) then
+
+		resultBalance = balanceArr(3) - balanceArr(2)
+		
+		resultId = 3
+		resultName = nameArr(3)
+		
+		resultInFavorId = 2
+		resultInFavor = nameArr(2)
+
+	elseif balanceArr(2) < balanceArr(3) then
+
+		resultBalance = balanceArr(2) - balanceArr(3)
+		
+		resultId = 2
+		resultName = nameArr(2)
+
+		resultInFavorId = 3
+		resultInFavor = nameArr(3)
+
+	else
+
+		resultBalance = 0
+		resultName = nameArr(0)
+		resultInFavor = nameArr(3)
+
+	end if
+	%>
+	<div class="balance-row">
+		<h3><a href="beanowner.asp?beanownerid=<%=resultId%>"><%=resultName%></a> owes DKK <%=formatNumber(abs(resultBalance))%> to <a href="beanowner.asp?beanownerid=<%=resultInFavorId%>"><%=resultInFavor%></a></h3>
+		<div class="small"><%=nameArr(2)%>: DKK <%=formatNumber(balanceArr(2))%></div>
+		<div class="small"><%=nameArr(3)%>: DKK <%=formatNumber(balanceArr(3))%></div>
+	</div>
+	<%
+end sub
 %>
 
 

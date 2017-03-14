@@ -92,6 +92,8 @@ if f&""<>"" then
 			call saveSupplier(supplierId, supplierName)
 		case "writeStock"
 			call writeStock()
+		case "writeBalanceTable"
+			call writeBalanceTable()
 	end select
 end if
 %>

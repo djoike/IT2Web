@@ -25,6 +25,7 @@
 	    	            <li><a href="/charts/pages/beanowners.asp">Owners</a></li>
 	    	            <li><a href="/charts/pages/locations.asp">Locations</a></li>
 	    	            <li><a href="/charts/pages/suppliers.asp">Suppliers</a></li>
+	    	            <li><a href="/charts/pages/balance.asp">Balance</a></li>
 	    	          </ul>
 	    	        </li>
 	    	        <li><a href="/charts/pages/profiles.asp">Profiles</a></li>
