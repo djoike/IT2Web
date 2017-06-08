@@ -239,7 +239,7 @@ function saveBean(byval beanId, byval beanName, byval beanPrice, byval beanInten
 		strSQL = "UPDATE Bean SET Name = '" & beanName & "', Price = "&beanPrice&", BeanIntentId = " & beanIntentId & ", Note = '" & beanNote & "', BeanOwnerId = "&beanOwnerId&" , BeanSupplierId = "&beanSupplierId&" , BeanLocationId = "&beanLocationId&","&_
 			" AmountPurchased = "&beanAmountPurchased&", AmountAdjustment = "&beanAmountAdjustment&", PurchaseDate = "&beanPurchaseDate&" WHERE Id = " & beanId
 	else
-		strSQL = "INSERT INTO Bean (Name, Price, BeanIntentId, Note, BeanOwnerId, BeanSupplierId, BeanLocationId,beanAmountPurchased, beanAmountAdjustment, beanPurchaseDate) VALUES ('"&beanName&"',"&beanPrice&","&beanIntentId&",'"&beanNote&"',"&beanOwnerId&","&beanSupplierId&","&beanLocationId&","&beanAmountPurchased&","&beanAmountAdjustment&","&beanPurchaseDate&")"
+		strSQL = "INSERT INTO Bean (Name, Price, BeanIntentId, Note, BeanOwnerId, BeanSupplierId, BeanLocationId,AmountPurchased, AmountAdjustment, PurchaseDate) VALUES ('"&beanName&"',"&beanPrice&","&beanIntentId&",'"&beanNote&"',"&beanOwnerId&","&beanSupplierId&","&beanLocationId&","&beanAmountPurchased&","&beanAmountAdjustment&","&beanPurchaseDate&")"
 	end if
 	conn.execute(strSQL)
 end function
@@ -662,7 +662,7 @@ sub writeBeanData(byval beanId)
 			beanId = "-"
 			beanIntentId = -1
 			beanName = ""
-			beanPurchaseDate = now()
+			beanPurchaseDate =year(now()) & "-" & lz_1(month(now())) & "-" & lz_1(day(now()))
 			beanNote = ""
 			beanOwnerId = -1
 			beanLocationId = -1
@@ -1246,7 +1246,7 @@ sub writeBalanceTable()
 			beanAdjustment = round(beanAdjustmentRaw,1)
 			%>
 			<div class="balance-row">
-				<%=roastDate%> &mdash; <a href="beanowner.asp?beanownerid=<%=roasterId%>"><%=e(roasterName)%></a> roasted <%=rawBeanWeight%>g of <a href="beanowner.asp?beanownerid=<%=ownerId%>"><%=ownerName%></a>'s <a href="/charts/pages/bean.asp?beanid=<%=beanId%>"><%=beanName%></a> to the price of <b>DKK <%=formatNumber(beanCost)%></b> which results in an adjustment of <b>DKK -<%=formatNumber(beanAdjustment)%></b>
+				<%=roastDate%> &mdash; <a href="beanowner.asp?beanownerid=<%=roasterId%>"><%=e(roasterName)%></a> <a href="roast.asp?roastid=<%=RoastId%>">roasted</a> <%=rawBeanWeight%>g of <a href="beanowner.asp?beanownerid=<%=ownerId%>"><%=ownerName%></a>'s <a href="/charts/pages/bean.asp?beanid=<%=beanId%>"><%=beanName%></a> to the price of <b>DKK <%=formatNumber(beanCost)%></b> which results in an adjustment of <b>DKK -<%=formatNumber(beanAdjustment)%></b>
 			</div>
 			<%
 		else
