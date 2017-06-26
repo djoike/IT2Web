@@ -48,6 +48,37 @@ nav.main-nav {
 	}
 }
 
+.main-profile
+{
+	.profile-data-list {
+		padding: 12px 0px 3px;
+	}
+	input[data-for="profileText"] {
+		font-size:9px;
+	}
+}
+
+.main-location
+{
+	.location-data-list {
+		padding: 12px 0px 3px;
+	}
+}
+
+.main-supplier
+{
+	.supplier-data-list {
+		padding: 12px 0px 3px;
+	}
+}
+
+.main-bean-owner
+{
+	.bean-owner-data-list {
+		padding: 12px 0px 3px;
+	}
+}
+
 #main-roast-chart {
 
 }

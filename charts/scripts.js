@@ -3,7 +3,7 @@ function handleRoastDataAndDrawGraph(data)
 	var dataObj = {datasets: []}
 	for(var i = 0; i < data.data.length; i++)
 	{
-		dataObj.datasets.push({label:data.data[i].roastId,data:data.data[i].data})
+		dataObj.datasets.push({label:data.data[i].roastId,data:data.data[i].data,borderColor: "rgba(33,77,255,0.2)"});
 	}
 	drawGraph(dataObj);
 	$('.main-roast-graph .loader').hide();
@@ -540,7 +540,104 @@ function loadBalance(elmTarget, callback)
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+// PROFILES ////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+function loadProfiles(elmTarget, callback)
+{
+	function handleProfilesTableLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
 
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeProfilesTable"},
+	  success: handleProfilesTableLoaded,
+	  dataType: 'html'
+	});
+}
+
+function loadProfile(elmTarget, profileId, callback)
+{
+	function handleProfileLoaded(data)
+	{
+		elmTarget.html(data);
+		callback ? callback() : void(0);
+	}
+
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "writeProfile",profileId: profileId},
+	  success: handleProfileLoaded,
+	  dataType: 'html'
+	});
+}
+
+function deleteProfile(profileId, callback)
+{
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "deleteProfile",profileId: profileId},
+	  success: callback
+	});
+}
+function saveProfile(profileId, callback)
+{
+	var profileName = $('[data-for="profileName"]').val();
+	var profileText = $('[data-for="profileText"]').val();
+	$.ajax({
+	  url: '/charts/ajax/proxy.asp',
+	  data: {function: "saveProfile",profileId: profileId, profileName: profileName, profileText: profileText},
+	  success: callback
+	});
+}
+
+var myChartProfile;
+function initProfileChart()
+{
+	var ctx = document.getElementById("main-profile-chart");
+	myChartProfile = new Chart(ctx, {
+	    type: 'line',
+	    options: {
+	    	maintainAspectRatio: true,
+	        scales: {
+	            yAxes: [{
+	                ticks: {
+	                    beginAtZero:true,
+	                    min: 0,
+	                    stepSize: 10
+	                }
+	            }],
+	            xAxes: [{
+	                type: 'time',
+	                position:"bottom",
+	                time: {
+                    	displayFormats: {
+                        	minute: 'mm:ss'
+                    	}
+                	}
+	            }]
+	        },
+	        legend: {display:false},
+	        elements:{
+	        	line: {
+	        		fill: false
+	        	}
+	        }
+	    }
+	});
+}
+function drawProfileGraph(data)
+{
+	myChartProfile.data.datasets = data.datasets;
+	myChartProfile.update();
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 
 
 

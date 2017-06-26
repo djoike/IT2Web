@@ -1310,6 +1310,127 @@ sub writeBalanceTable()
 	</div>
 	<%
 end sub
+
+'/////////////////////////////////////////////////////////////////////////////////////
+'// Locations ////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+function getProfilesSQL(byval profileId)
+	if profileId > -1 then
+		profileId = int(profileId)
+		strWhereSQL = " AND (Id = "& profileId &")"
+	end if
+	getProfilesSQL = "SELECT Id, Name, ProfileText, Active FROM Profile WHERE (Active = 1)"& strWhereSQL &" ORDER BY Name"
+end function
+
+sub writeProfilesTable()
+	set rsProfiles = conn.execute(getProfilesSQL(-1))
+	if not rsProfiles.eof then
+		%>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+					<th class="hidden-xs">Profile</th>
+					<th>Edit</th>
+					<th><span class="glyphicon glyphicon-remove"></span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<%
+				do while not rsProfiles.eof
+					profileId = rsProfiles("Id")
+					profileName = dashIfNull(rsProfiles("Name"))
+					profileText = dashIfNull(rsProfiles("ProfileText"))
+					%>
+					<tr data-profile-id="<%=profileId%>">
+						<td><%=e(profileId)%></td>
+						<td><%=e(profileName)%></td>
+						<td class="hidden-xs"><%=e(profileText)%></td>
+						<td><a href="/charts/pages/profile.asp?profileid=<%=e(profileId)%>">Edit</a></td>
+						<td class="remove-column"><span class="glyphicon glyphicon-remove"></span></td>
+					</tr>
+					<%
+					rsProfiles.Movenext
+				loop
+				%>
+			</tbody>
+		</table>
+		<%
+	end if
+	rsProfiles.close
+	set rsProfiles = nothing
+end sub
+
+sub writeProfile(byval profileId)
+	profileId = int(profileId)
+	%>
+	<div class="profile-data-list clearfix">
+		<%
+		if profileId > 0 then
+			set rsProfile = conn.execute(getProfilesSQL(profileId))
+			if not rsProfile.eof then
+				profileName = rsProfile("Name")
+				profileText = rsProfile("ProfileText")
+			end if
+			rsProfile.close
+			set rsProfile = nothing
+		else
+			profileId = "-"
+			profileName = ""
+		end if	
+		%>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Id</label>
+				<p class="form-control-static"><%=e(profileId)%></p>
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Name</label>
+				<input type="text" class="form-control" data-for="profileName" value="<%=e(profileName)%>" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Profile</label>
+				<input type="text" class="form-control" data-for="profileText" value="<%=e(profileText)%>" disabled="disabled" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group pull-right">
+				<button class="btn btn-primary btn-save">Save</button>
+				<button class="btn btn-default btn-back">Back</button>
+			</div>
+		</div>
+	</div>
+	<%
+end sub
+
+function deleteProfile(byval profileId)
+	profileId = int(profileId)
+	strSQL = "UPDATE Profile SET Active = 0 WHERE Id = " & profileId
+	conn.execute(strSQL)
+end function
+
+function saveProfile(byval profileId, byval profileName, byval profileText)
+	profileId = int(profileId)
+	profileName = replace(profileName&"","'","''")
+	profileText = replace(profileText&"","'","''")
+
+	if profileId > 0 then
+		strSQL = "UPDATE Profile SET Name = '" & profileName & "', ProfileText = '" & profileText & "' WHERE Id = " & profileId
+	else
+		strSQL = "INSERT INTO Profile (Name, ProfileText) VALUES ('"&profileName&"', '"&profileText&"')"
+	end if
+	conn.execute(strSQL)
+end function
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+'/////////////////////////////////////////////////////////////////////////////////////
+
+
 %>
 
 

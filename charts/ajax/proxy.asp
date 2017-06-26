@@ -94,6 +94,19 @@ if f&""<>"" then
 			call writeStock()
 		case "writeBalanceTable"
 			call writeBalanceTable()
+		case "writeProfilesTable"
+			call writeProfilesTable()
+		case "writeProfile"
+			profileId = int(request.querystring("profileId"))
+			call writeProfile(profileId)
+		case "deleteProfile"
+			profileId = int(request.querystring("profileId"))
+			call deleteProfile(profileId)
+		case "saveProfile"
+			profileId = int(request.querystring("profileId"))
+			profileName = request.querystring("profileName")
+			profileText = request.querystring("profileText")
+			call saveProfile(profileId, profileName, profileText)
 	end select
 end if
 %>
