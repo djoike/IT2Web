@@ -1395,7 +1395,37 @@ sub writeProfile(byval profileId)
 		<div class="col-xs-12">
 			<div class="form-group">
 				<label>Profile</label>
-				<input type="text" class="form-control" data-for="profileText" value="<%=e(profileText)%>" disabled="disabled" />
+				<input type="text" class="form-control" data-for="profileText" value="<%=e(profileText)%>" readonly="readonly" />
+			</div>
+		</div>
+		<div class="col-xs-12">
+			<div class="form-group">
+				<label>Steps</label>
+				<div class="stepTemplateContainer">
+					<div class="step">
+						<table>
+							<tr class="border">
+								<td class="name">Temperature</td>
+								<td class="range"><input type="range" class="" data-for="" min="0" max="260" data-type="temp" data-value-for="temp" /></td>
+								<td class="value"><span data-for="temp"></span></td>
+							</tr>
+							<tr>
+								<td class="name">Progression</td>
+								<td class="range"><input type="range" class="" data-for="" min="0" max="990" step="10" data-type="time" data-value-for="prog" /></td>
+								<td class="value"><span data-for="prog"></span></td>
+							</tr>
+							<tr>
+								<td class="name">Total</td>
+								<td class="range"><input type="range" class="" data-for="" min="0" max="990" step="10" data-type="time" data-value-for="total" /></td>
+								<td class="value"><span data-for="total"></span></td>
+							</tr>
+						</table>
+						<a class="remove" href="javascript:void(0);">Remove</a>
+					</div>
+				</div>
+				<div class="stepsContainer">
+					<div class="add-step"><a href="javascript:addNewStep();">Add new step</a></div>
+				</div>
 			</div>
 		</div>
 		<div class="col-xs-12">

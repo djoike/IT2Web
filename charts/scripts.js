@@ -601,6 +601,9 @@ function initProfileChart()
 	myChartProfile = new Chart(ctx, {
 	    type: 'line',
 	    options: {
+	    	animation: {
+	    		duration: 0
+	    	},
 	    	maintainAspectRatio: true,
 	        scales: {
 	            yAxes: [{
@@ -633,6 +636,291 @@ function drawProfileGraph(data)
 {
 	myChartProfile.data.datasets = data.datasets;
 	myChartProfile.update();
+}
+
+var __profile = {};
+function initProfiler()
+{
+    resetProfiler();
+    var profileText = $('[data-for="profileText"]').val();
+    loadProfileFromText(profileText);
+}
+
+function resetProfiler()
+{
+    __profile = {};
+}
+
+function loadProfileFromText(profileText)
+{
+    __profile = parseRawProfile(profileText);
+    //drawProfile(__profile);
+    //renderProfileSteps(__profile);
+}
+
+function bindStepEvents()
+{
+	$('.stepsContainer .step input')
+		.off('input')
+		.off('change')
+		.on('input',handleStepInput)
+		.on('change',reDrawProfile)
+		.on('change',function(){handleStepChangeValidate(this)});
+	$('.stepsContainer a.remove').off('click').on('click',handleStepRemoveClick);
+}
+
+function handleStepRemoveClick()
+{
+	var elm = $(this);
+	removeStep(elm);
+}
+
+function removeStep(elm)
+{
+	var elmRemove = elm.closest('.step');
+	elmRemove.remove();
+	reDrawProfile();
+}
+
+function handleStepChangeValidate(elm)
+{
+	var elm = $(elm);
+	var val = elm.val();
+	if(elm.is('[data-type="time"]'))
+	{
+		if(elm.is('[data-value-for="prog"]'))
+		{
+			var otherElm = elm.closest('table').find('[data-value-for="total"]');
+			var otherVal = otherElm.val();
+			if(val > otherVal)
+			{
+				otherElm.val(val);
+				var newVal = secondsToMMSS(val);
+				otherElm.closest('tr').find('.value span').html(newVal);
+				reDrawProfile();
+			}
+		}
+		else
+		{
+			var otherElm = elm.closest('table').find('[data-value-for="prog"]');
+			var otherVal = otherElm.val();
+			if(val < otherVal)
+			{
+				otherElm.val(val);
+				var newVal = secondsToMMSS(val);
+				otherElm.closest('tr').find('.value span').html(newVal);
+				reDrawProfile();
+			}
+		}
+	}
+}
+
+function reDrawProfile()
+{
+	var profileText = stepsToProfileText();
+	$('[data-for="profileText"]').val(profileText);
+	__profile = parseRawProfile(profileText);
+	drawProfile(__profile);
+}
+
+function stepsToProfileText()
+{
+	var profileText = "";
+	var tempArr = $('.stepsContainer .step [data-value-for="temp"]');
+	var progArr = $('.stepsContainer .step [data-value-for="prog"]');
+	var totalArr = $('.stepsContainer .step [data-value-for="total"]');
+	for(var i = 0; i < tempArr.length; i++)
+	{
+		profileText += getStepString(tempArr[i].value,progArr[i].value,totalArr[i].value);
+	}
+	return profileText;
+}
+
+function getStepString(temp,prog,total)
+{
+	var stepText = "";
+	stepText += lefZ(temp,3);
+	stepText += "-";
+	stepText += lefZ(prog,3);
+	stepText += "-";
+	stepText += lefZ(total,3);
+	stepText += "#";
+
+	return stepText;
+}
+
+function handleStepInput()
+{
+	var elm = $(this);
+	var val = elm.val();
+	var newVal = val;
+	var type = elm.data('type');
+	if(type == "temp")
+	{
+		newVal += "&deg;";
+	}
+	else if(type == "time")
+	{
+		newVal = secondsToMMSS(newVal);
+	}
+	elm.closest('tr').find('.value span').html(newVal);
+	reDrawProfile();
+}
+
+function drawProfile(profile)
+{
+
+    var dataset = convertProfileStepsToGraphDataSet(profile);
+
+    var dataObj = {datasets: []}
+    dataObj.datasets.push({
+        label:'Profile',
+        data:dataset,
+        lineTension: 0,
+        borderColor: "rgba(251,118,75,0.6)"
+    })
+
+    dataObj.datasets.push({label:'Profile',data:[{"x":"1900-01-01T00:25:00.000","y":260}],borderColor: "rgba(255,255,255,0.0)",backgroundColor: "rgba(255,255,255,0.0)"});
+    
+    drawProfileGraph(dataObj);
+}
+
+function convertProfileStepsToGraphDataSet(profile)
+{
+    var latestDataPoint = {
+        timeInSec: 0,
+        temperature: 0
+    };
+
+    var dataset = [];
+    dataset.push(getDataPointJSON(latestDataPoint));
+
+    
+    var steps = profile.steps;
+    for(var i = 0; i < steps.length;i++)
+    {
+        var step = steps[i];
+        
+        // Determine the correct progression point
+        var progTime;
+        var remainingTime;
+        if(step.stepProgressionTime > 0)
+        {
+            //Create intermediary datapoint
+            progTime = step.stepProgressionTime;
+        }
+        else
+        {
+            progTime = step.stepTemperature - latestDataPoint.temperature; // Because it's 1 deg. per second
+        }
+
+        // Add the progression point
+        var progressionPoint = {
+            timeInSec: latestDataPoint.timeInSec + progTime,
+            temperature: step.stepTemperature
+        }
+        dataset.push(getDataPointJSON(progressionPoint));
+        latestDataPoint = progressionPoint; // Beware that it's not cloning the object here, but so far it's not needed to do that.
+
+        //Check for remaining time
+        remainingTime = step.stepTotalTime - progTime;
+        if(remainingTime > 0)
+        {
+            var remainingPoint = {
+                timeInSec: latestDataPoint.timeInSec + remainingTime,
+                temperature: step.stepTemperature
+            }
+            dataset.push(getDataPointJSON(remainingPoint));
+            latestDataPoint = remainingPoint; // Beware that it's not cloning the object here, but so far it's not needed to do that.
+        }
+    }
+    return dataset;
+}
+function getDataPointJSON(datapoint)
+{
+    var timeString = secondsToMMSS(datapoint.timeInSec);
+    var temperatureString = datapoint.temperature;
+
+    return {"x":"1900-01-01T00:" + timeString + ".000","y": temperatureString };
+}
+function parseRawProfile(strRawProfile)
+{
+    var stepArray = strRawProfile.split("#");
+    var jsonObj = {"steps":[]};
+
+    if(stepArray[stepArray.length-1]=="")
+    {
+        //Remove empty element at end
+        stepArray.pop();
+    }
+
+    for(var i = 0; i<stepArray.length; i++)
+    {
+        var currentStepArray = stepArray[i].split("-");
+        var jsonElm = {
+            "stepno":i,
+            "stepTemperature":parseInt(currentStepArray[0]),
+            "stepProgressionTime":parseInt(currentStepArray[1]),
+            "stepTotalTime":parseInt(currentStepArray[2])
+        };
+        jsonObj.steps.push(jsonElm);
+    }
+    return jsonObj;
+}
+function secondsToMMSS(secs)
+{
+	return ("0" + Math.floor(secs / 60)).slice(-2) + ":" + ("0" + (secs % 60)).slice(-2);
+}
+function lefZ(number,minLength)
+{
+	var s = number+"";
+	while (s.length < minLength) s = "0" + s;
+	return s;
+}
+function initSteps()
+{
+	var steps = __profile.steps;
+
+	for(var i = 0; i < steps.length; i++)
+	{
+		addStepHTML(steps[i].stepTemperature, steps[i].stepProgressionTime, steps[i].stepTotalTime);
+	}
+
+	bindStepEvents();
+	drawProfile(__profile);
+}
+
+function addNewStep()
+{
+	var iMaxStep = __profile.steps.length-1;
+	var temp = 200;
+	if(iMaxStep >= 0)
+	{
+		temp = __profile.steps[iMaxStep].stepTemperature;
+	}
+	addStepHTML(temp, 120, 120);
+	bindStepEvents();
+
+	reDrawProfile();
+}
+
+function addStepHTML(temp, prog, total)
+{
+	var elm = $('.stepTemplateContainer .step').clone();
+
+	// Temp
+	elm.find('[data-value-for="temp"]').val(temp);
+	elm.find('[data-for="temp"]').html(temp + "&deg;");
+
+	// Prog
+	elm.find('[data-value-for="prog"]').val(prog);
+	elm.find('[data-for="prog"]').html(secondsToMMSS(prog));
+
+	// Total
+	elm.find('[data-value-for="total"]').val(total);
+	elm.find('[data-for="total"]').html(secondsToMMSS(total));
+
+	$('.stepsContainer').append(elm);
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -2,6 +2,7 @@ body {
 	background:#918f88 url('images/bg.jpg') center top no-repeat;
 	padding-top:20px;
 }
+hr {margin-top:10px;margin-bottom:10px;}
 nav.main-nav {
 }
 
@@ -201,5 +202,41 @@ tr.inactive td {
 	&:last-child {
 		border-bottom:0px solid;
 		padding-bottom:30px;
+	}
+}
+.stepTemplateContainer {
+	display:none;
+}
+.stepsContainer {
+	position:relative;
+	padding-bottom:30px;
+	.step {
+		padding:10px 0px 10px 0px;
+		border-bottom:1px solid #ddd;
+		&:first-child {
+			border-top:1px solid #ddd;
+		}
+	}
+	.name, .value, .range {
+		padding:5px 0px 5px 0px;
+	}
+	.name {
+		font-size:12px;
+	}
+	.value {
+		font-size:12px;
+	}
+	.range {
+		width:100%;
+		padding-left:10px;
+		padding-right:10px;
+	}
+	.add-step {
+		position:absolute;
+		bottom:0;
+		left:0;
+	}
+	a.remove {
+		font-size:12px;
 	}
 }
