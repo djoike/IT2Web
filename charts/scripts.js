@@ -1,14 +1,165 @@
+////////////////////////////////////////////////////////////////////////////
+// UTILITY  ////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+function secondsToMMSS(secs)
+{
+	return ("0" + Math.floor(secs / 60)).slice(-2) + ":" + ("0" + (secs % 60)).slice(-2);
+}
+function lefZ(number,minLength)
+{
+	var s = number+"";
+	while (s.length < minLength) s = "0" + s;
+	return s;
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+// COMMON PROFILE GRAPHING  ////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+function getElapsedPreductionByTemperature(temp)
+{
+   return  2.2631997788658467e+001 * Math.pow(temp,0)
+        +  2.2495741681623960e-001 * Math.pow(temp,1)
+        +  1.4724211125521899e-002 * Math.pow(temp,2)
+        + -8.2862310284286634e-005 * Math.pow(temp,3)
+        +  2.2091369327342341e-007 * Math.pow(temp,4);
+}
+
+function getDataPointJSON(datapoint)
+{
+    var timeString = secondsToMMSS(datapoint.timeInSec);
+    var temperatureString = datapoint.temperature;
+
+    return {"x":"1900-01-01T00:" + timeString + ".000","y": temperatureString };
+}
+function parseRawProfile(strRawProfile)
+{
+    var stepArray = strRawProfile.split("#");
+    var jsonObj = {"steps":[]};
+
+    if(stepArray[stepArray.length-1]=="")
+    {
+        //Remove empty element at end
+        stepArray.pop();
+    }
+
+    for(var i = 0; i<stepArray.length; i++)
+    {
+        var currentStepArray = stepArray[i].split("-");
+        var jsonElm = {
+            "stepno":i,
+            "stepTemperature":parseInt(currentStepArray[0]),
+            "stepProgressionTime":parseInt(currentStepArray[1]),
+            "stepTotalTime":parseInt(currentStepArray[2])
+        };
+        jsonObj.steps.push(jsonElm);
+    }
+    return jsonObj;
+}
+function convertProfileStepsToGraphDataSet(profile)
+{
+    var latestDataPoint = {
+        timeInSec: 0,
+        temperature: 0
+    };
+
+    var dataset = [];
+    dataset.push(getDataPointJSON(latestDataPoint));
+
+    
+    var steps = profile.steps;
+    for(var i = 0; i < steps.length;i++)
+    {
+        var step = steps[i];
+        
+        // Determine the correct progression point
+        var progTime;
+        var remainingTime;
+        if(step.stepProgressionTime > 0)
+        {
+            //Create intermediary datapoint
+            progTime = step.stepProgressionTime;
+        }
+        else
+        {
+        	var latestElapsed = getElapsedPreductionByTemperature(latestDataPoint.temperature);
+        	var nextElapsed = getElapsedPreductionByTemperature(step.stepTemperature);
+        	if((step.stepTemperature - latestDataPoint.temperature) > 0)
+        	{
+            	progTime = Math.round(nextElapsed - latestElapsed);
+            }
+            else
+            {
+            	progTime = -Math.round((step.stepTemperature - latestDataPoint.temperature) * 4);
+            }
+        }
+
+        // Add the progression point
+        var progressionPoint = {
+            timeInSec: latestDataPoint.timeInSec + progTime,
+            temperature: step.stepTemperature
+        }
+        dataset.push(getDataPointJSON(progressionPoint));
+        latestDataPoint = progressionPoint; // Beware that it's not cloning the object here, but so far it's not needed to do that.
+
+        //Check for remaining time
+        remainingTime = step.stepTotalTime - progTime;
+        if(remainingTime > 0)
+        {
+            var remainingPoint = {
+                timeInSec: latestDataPoint.timeInSec + remainingTime,
+                temperature: step.stepTemperature
+            }
+            dataset.push(getDataPointJSON(remainingPoint));
+            latestDataPoint = remainingPoint; // Beware that it's not cloning the object here, but so far it's not needed to do that.
+        }
+    }
+    return dataset;
+}
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+var __roastGraphDataSets = {datasets: []};
+var __roastGraphProfileDataPoints = [];
 function handleRoastDataAndDrawGraph(data)
 {
-	var dataObj = {datasets: []}
+	__roastGraphDataSets.datasets = [];
 	for(var i = 0; i < data.data.length; i++)
 	{
-		dataObj.datasets.push({label:data.data[i].roastId,data:data.data[i].data,borderColor: "rgba(33,77,255,0.2)"});
+		__roastGraphDataSets.datasets.push({label:data.data[i].roastId,data:data.data[i].data,borderColor: "rgba(33,77,255,0.2)"});
 	}
-	drawGraph(dataObj);
+	drawGraph(__roastGraphDataSets);
+	
+	if(data.data.length == 1)
+	{
+		var profileText = data.data[0].profileText;
+		var profile = parseRawProfile(profileText);
+		var profileData = convertProfileStepsToGraphDataSet(profile);
+		__roastGraphProfileDataPoints = profileData;
+	}
+	else
+	{
+		__roastGraphProfileDataPoints = [];
+	}
+	handleRoastGraphProfileLoaded();
 	$('.main-roast-graph .loader').hide();
 	$("#main-roast-chart-container").show();
 }
+
+function handleRoastGraphProfileLoaded()
+{
+	if(__roastGraphProfileDataPoints.length > 0)
+	{
+		__roastGraphDataSets.datasets.push({
+	        label:'Profile',
+	        data:__roastGraphProfileDataPoints,
+	        lineTension: 0,
+	        borderColor: "rgba(251,118,75,0.6)"
+	    });
+		drawGraph(__roastGraphDataSets);
+	}
+}
+
 var myChart;
 function initChart()
 {
@@ -686,6 +837,7 @@ function handleStepChangeValidate(elm)
 {
 	var elm = $(elm);
 	var val = elm.val();
+
 	if(elm.is('[data-type="time"]'))
 	{
 		if(elm.is('[data-value-for="prog"]'))
@@ -710,6 +862,24 @@ function handleStepChangeValidate(elm)
 				var newVal = secondsToMMSS(val);
 				otherElm.closest('tr').find('.value span').html(newVal);
 				reDrawProfile();
+			}
+		}
+	}
+
+	//Always run through temps
+	for(var i = 0; i < __profile.steps.length; i++)
+	{
+		if(__profile.steps[i].stepProgressionTime === 0)
+		{
+			var currentTotal = __profile.steps[i].stepTotalTime;
+			var currentTemp = __profile.steps[i].stepTemperature;
+			var lastTemp = i > 0 ? __profile.steps[i-1].stepTemperature : 0;
+			var elapsed = currentTemp - lastTemp > 0 ? Math.round(getElapsedPreductionByTemperature(currentTemp) - getElapsedPreductionByTemperature(lastTemp)) : -Math.round((currentTemp - lastTemp) * 4);
+			if(elapsed > currentTotal)
+			{
+				var elmTotal = $($('.stepsContainer .step [data-value-for="total"]')[i]);
+				elmTotal.val(elapsed);
+				handleStepInput(elmTotal, true);
 			}
 		}
 	}
@@ -749,9 +919,12 @@ function getStepString(temp,prog,total)
 	return stepText;
 }
 
-function handleStepInput()
+function handleStepInput(elm, isElm)
 {
-	var elm = $(this);
+	if(isElm == undefined)
+	{
+		elm = $(this);
+	}
 	var val = elm.val();
 	var newVal = val;
 	var type = elm.data('type');
@@ -778,105 +951,13 @@ function drawProfile(profile)
         data:dataset,
         lineTension: 0,
         borderColor: "rgba(251,118,75,0.6)"
-    })
+    });
 
     dataObj.datasets.push({label:'Profile',data:[{"x":"1900-01-01T00:25:00.000","y":260}],borderColor: "rgba(255,255,255,0.0)",backgroundColor: "rgba(255,255,255,0.0)"});
     
     drawProfileGraph(dataObj);
 }
 
-function convertProfileStepsToGraphDataSet(profile)
-{
-    var latestDataPoint = {
-        timeInSec: 0,
-        temperature: 0
-    };
-
-    var dataset = [];
-    dataset.push(getDataPointJSON(latestDataPoint));
-
-    
-    var steps = profile.steps;
-    for(var i = 0; i < steps.length;i++)
-    {
-        var step = steps[i];
-        
-        // Determine the correct progression point
-        var progTime;
-        var remainingTime;
-        if(step.stepProgressionTime > 0)
-        {
-            //Create intermediary datapoint
-            progTime = step.stepProgressionTime;
-        }
-        else
-        {
-            progTime = step.stepTemperature - latestDataPoint.temperature; // Because it's 1 deg. per second
-        }
-
-        // Add the progression point
-        var progressionPoint = {
-            timeInSec: latestDataPoint.timeInSec + progTime,
-            temperature: step.stepTemperature
-        }
-        dataset.push(getDataPointJSON(progressionPoint));
-        latestDataPoint = progressionPoint; // Beware that it's not cloning the object here, but so far it's not needed to do that.
-
-        //Check for remaining time
-        remainingTime = step.stepTotalTime - progTime;
-        if(remainingTime > 0)
-        {
-            var remainingPoint = {
-                timeInSec: latestDataPoint.timeInSec + remainingTime,
-                temperature: step.stepTemperature
-            }
-            dataset.push(getDataPointJSON(remainingPoint));
-            latestDataPoint = remainingPoint; // Beware that it's not cloning the object here, but so far it's not needed to do that.
-        }
-    }
-    return dataset;
-}
-function getDataPointJSON(datapoint)
-{
-    var timeString = secondsToMMSS(datapoint.timeInSec);
-    var temperatureString = datapoint.temperature;
-
-    return {"x":"1900-01-01T00:" + timeString + ".000","y": temperatureString };
-}
-function parseRawProfile(strRawProfile)
-{
-    var stepArray = strRawProfile.split("#");
-    var jsonObj = {"steps":[]};
-
-    if(stepArray[stepArray.length-1]=="")
-    {
-        //Remove empty element at end
-        stepArray.pop();
-    }
-
-    for(var i = 0; i<stepArray.length; i++)
-    {
-        var currentStepArray = stepArray[i].split("-");
-        var jsonElm = {
-            "stepno":i,
-            "stepTemperature":parseInt(currentStepArray[0]),
-            "stepProgressionTime":parseInt(currentStepArray[1]),
-            "stepTotalTime":parseInt(currentStepArray[2])
-        };
-        jsonObj.steps.push(jsonElm);
-    }
-    return jsonObj;
-}
-function secondsToMMSS(secs)
-{
-	return ("0" + Math.floor(secs / 60)).slice(-2) + ":" + ("0" + (secs % 60)).slice(-2);
-}
-function lefZ(number,minLength)
-{
-	var s = number+"";
-	while (s.length < minLength) s = "0" + s;
-	return s;
-}
 function initSteps()
 {
 	var steps = __profile.steps;
@@ -898,7 +979,7 @@ function addNewStep()
 	{
 		temp = __profile.steps[iMaxStep].stepTemperature;
 	}
-	addStepHTML(temp, 120, 120);
+	addStepHTML(temp, 330, 330);
 	bindStepEvents();
 
 	reDrawProfile();

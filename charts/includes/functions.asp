@@ -37,13 +37,14 @@ function getRoastsSQL(byval roastId, byval minimumLogCount)
 	end if
 	strSQL = "SELECT Roast.Id, Roast.StartTime, Roast.EndTime, Profile.Name AS ProfileName, Roast.ManualControlStartTime,"&_
 				" COUNT(DISTINCT RoastLog.Id) AS LogCount, DATEDIFF(ss, Roast.StartTime, Roast.EndTime) AS Duration, Bean.Name AS BeanName, Bean.Id AS BeanId,"&_
-				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight, Roast.FinancialOwnerId"&_
+				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName,"&_
+				" Roast.RawBeanWeight, Roast.FinancialOwnerId, Roast.ProfileText AS RoastProfileText, Profile.ProfileText"&_
 				" FROM Roast INNER JOIN"&_
 				" RoastLog ON Roast.Id = RoastLog.RoastId LEFT OUTER JOIN"&_
 				" RoastIntent ON Roast.RoastIntentId = RoastIntent.Id LEFT OUTER JOIN"&_
 				" Bean ON Roast.BeanId = Bean.Id LEFT OUTER JOIN"&_
 				" Profile ON Roast.ProfileId = Profile.Id"&_
-				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight, Roast.FinancialOwnerId"&_
+				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight, Roast.FinancialOwnerId, Roast.ProfileText, Profile.ProfileText"&_
 				" HAVING (Roast.Active = 1) AND (COUNT(DISTINCT RoastLog.Id) > "&minimumLogCount&")"& strWhereSQL &_
 				" ORDER BY Roast.Id DESC"
 	getRoastsSQL = strSQL
@@ -105,10 +106,17 @@ end function
 function getRoastData(byval roastIds)
 	roastIds = replace(roastIds,"'","")
 	response.write("{""data"":[")
-	
+
 	first = true
 	for each roastId in split(roastIds,",")
 		roastId = trim(roastId)
+		
+		set rsRoast = conn.execute(getRoastsSQL(roastId,-1))
+		profileText = rsRoast("RoastProfileText")
+		if profileText&""="" then
+			profileText = rsRoast("ProfileText")
+		end if
+
 		if not first then
 			first = true
 			response.write(",")
@@ -134,7 +142,7 @@ function getRoastData(byval roastIds)
 			strData = strData & "]"
 		end if
 		
-		response.write("{""roastId"": """&roastId&""",""data"":"&strData&"}")
+		response.write("{""roastId"": """&roastId&""",""data"":"&strData&",""profileText"":"""&profileText&"""}")
 		
 		
 		first = false
