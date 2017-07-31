@@ -908,15 +908,12 @@ function stepsToProfileText()
 
 function getStepString(temp,prog,total)
 {
-	var stepText = "";
-	stepText += lefZ(temp,3);
-	stepText += "-";
-	stepText += lefZ(prog,3);
-	stepText += "-";
-	stepText += lefZ(total,3);
-	stepText += "#";
-
-	return stepText;
+	return 	lefZ(temp,3) +
+			"-" +
+			lefZ(prog,3) +
+			"-" +
+			lefZ(total,3) +
+			"#";
 }
 
 function handleStepInput(elm, isElm)
