@@ -37,6 +37,7 @@
 							{
 								$('.btn.refresh-button').off('click').on('click',function(){reloadRoastsTable($('.main-roast-list').find('.resultcontainer'),bindEvents)});
 								$('.main-roast-list .remove-column .glyphicon-remove').off('click').on('click',prepareDeleteRoast);
+								$('.main-roast-list [data-toggle="tooltip"]').tooltip(); 
 							}
 							function prepareDeleteRoast(event)
 							{

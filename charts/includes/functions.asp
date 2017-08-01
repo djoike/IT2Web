@@ -25,6 +25,10 @@ function dashIfNull(byval str)
 	end if
 end function
 
+function formatTemperature(byval temp)
+	formatTemperature = e(round(temp,1)) & "&deg;C"
+end function
+
 function getRoastsSQL(byval roastId, byval minimumLogCount)
 	if roastId > -1 then
 		roastId = int(roastId)
@@ -38,13 +42,15 @@ function getRoastsSQL(byval roastId, byval minimumLogCount)
 	strSQL = "SELECT Roast.Id, Roast.StartTime, Roast.EndTime, Profile.Name AS ProfileName, Roast.ManualControlStartTime,"&_
 				" COUNT(DISTINCT RoastLog.Id) AS LogCount, DATEDIFF(ss, Roast.StartTime, Roast.EndTime) AS Duration, Bean.Name AS BeanName, Bean.Id AS BeanId,"&_
 				" RoastIntent.Id AS RoastIntentId, RoastIntent.RoastIntent, Roast.pictureName,"&_
-				" Roast.RawBeanWeight, Roast.FinancialOwnerId, Roast.ProfileText AS RoastProfileText, Profile.ProfileText"&_
+				" Roast.RawBeanWeight, Roast.FinancialOwnerId, Roast.ProfileText AS RoastProfileText, Profile.ProfileText, Roast.Note,"&_
+				" Roast.FirstCrackElapsed, Roast.SecondCrackElapsed, Roast.FirstCrackTemp, Roast.SecondCrackTemp"&_
 				" FROM Roast INNER JOIN"&_
 				" RoastLog ON Roast.Id = RoastLog.RoastId LEFT OUTER JOIN"&_
 				" RoastIntent ON Roast.RoastIntentId = RoastIntent.Id LEFT OUTER JOIN"&_
 				" Bean ON Roast.BeanId = Bean.Id LEFT OUTER JOIN"&_
 				" Profile ON Roast.ProfileId = Profile.Id"&_
-				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight, Roast.FinancialOwnerId, Roast.ProfileText, Profile.ProfileText"&_
+				" GROUP BY Roast.Id, Roast.Active, Roast.StartTime, Profile.Name, Roast.ManualControlStartTime, RoastLog.RoastId, Roast.EndTime, Bean.Name, Bean.Id, RoastIntent.Id, RoastIntent.RoastIntent, Roast.pictureName, Roast.RawBeanWeight,"&_
+				" Roast.FinancialOwnerId, Roast.ProfileText, Profile.ProfileText, Roast.Note, Roast.FirstCrackElapsed, Roast.SecondCrackElapsed, Roast.FirstCrackTemp, Roast.SecondCrackTemp"&_
 				" HAVING (Roast.Active = 1) AND (COUNT(DISTINCT RoastLog.Id) > "&minimumLogCount&")"& strWhereSQL &_
 				" ORDER BY Roast.Id DESC"
 	getRoastsSQL = strSQL
@@ -192,7 +198,7 @@ function getBeanIntentsSQL(byval intentId)
 	getBeanIntentsSQL = "SELECT Id, Name FROM BeanIntent" & strWhereSQL & " ORDER BY Name"
 end function
 
-function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBeanWeight, byval financialOwnerId)
+function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBeanWeight, byval financialOwnerId, byval roastNote)
 	roastId = int(roastId)
 	beanId = int(beanId)
 	if beanId = 0 then
@@ -208,7 +214,9 @@ function saveRoast(byval roastId, byval beanId, byval roastIntentId, byval rawBe
 	end if
 	rawBeanWeight = int(rawBeanWeight)
 
-	strSQL = "UPDATE Roast SET BeanId = " & beanId & ", RoastIntentId = " & roastIntentId & ", RawBeanWeight = "&rawBeanWeight&", FinancialOwnerId = "&financialOwnerId&" WHERE Id = " & roastId
+	roastNote = replace(roastNote, "'","''")
+
+	strSQL = "UPDATE Roast SET BeanId = " & beanId & ", RoastIntentId = " & roastIntentId & ", RawBeanWeight = "&rawBeanWeight&", FinancialOwnerId = "&financialOwnerId&", Note = '"&roastNote&"' WHERE Id = " & roastId
 	conn.execute(strSQL)
 end function
 
@@ -303,6 +311,7 @@ sub writeRoastsTable(byval strRoastIds)
 				<th class="">Bean</th>
 				<th class="hidden-xs">Intent</th>
 				<th class="hidden-xs">Amount</th>
+				<th class="hidden-xs">Note</th>
 				<th><%if writePicker then%>Add<%else%>View<%end if%></th>
 				<%if not writePicker then%><th><span class="glyphicon glyphicon-remove"></span></th><%end if%>
 			</tr>
@@ -350,6 +359,9 @@ sub writeRoastsTable(byval strRoastIds)
 
 				roastIntent = dashIfNull(rsRoasts("RoastIntent"))
 
+				roastNote = rsRoasts("Note")
+				roastNote = e(roastNote)
+
 				rawBeanWeight = int(rsRoasts("RawBeanWeight"))
 
 				alreadyPicked = writePicker AND instr(","&strRoastIds&",",","&roastID&",")>0
@@ -364,6 +376,11 @@ sub writeRoastsTable(byval strRoastIds)
 					<td class=""><%=e(roastBean)%></td>
 					<td class="hidden-xs"><%=e(roastIntent)%></td>
 					<td class="hidden-xs"><%=e(rawBeanWeight)%> g</td>
+					<td class="hidden-xs">
+						<%if roastNote&""<>"" then%>
+							<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" title="<%=roastNote%>"></span>
+						<%end if%>
+					</td>
 					<td class="view-column <%if alreadyPicked then%>picked<%end if%>">
 						<span>Added</span>
 						<a href="<%if writePicker then%>javascript:void(0);<%else%>/charts/pages/roast.asp?roastid=<%=e(roastID)%><%end if%>"><%if writePicker then%>Add<%else%>View<%end if%></a>
@@ -419,6 +436,26 @@ sub writeRoastData(byval roastId)
 			if roastDuration&""<>"-" then
 				roastDuration = secondsAsTime(roastDuration)
 			end if
+
+			roastFirstCrackTemp = dashIfNull(rsRoasts("FirstCrackTemp"))
+			if roastFirstCrackTemp&""<>"-" then
+				roastFirstCrackTemp = formatTemperature(roastFirstCrackTemp)
+			end if
+			roastSecondCrackTemp = dashIfNull(rsRoasts("SecondCrackTemp"))
+			if roastSecondCrackTemp&""<>"-" then
+				roastSecondCrackTemp = formatTemperature(roastSecondCrackTemp)
+			end if
+
+			roastFirstCrackElapsed = dashIfNull(rsRoasts("FirstCrackElapsed"))
+			if roastFirstCrackElapsed&""<>"-" then
+				roastFirstCrackElapsed = secondsAsTime(roastFirstCrackElapsed)
+			end if
+			roastSecondCrackElapsed = dashIfNull(rsRoasts("SecondCrackElapsed"))
+			if roastSecondCrackElapsed&""<>"-" then
+				roastSecondCrackElapsed = secondsAsTime(roastSecondCrackElapsed)
+			end if
+
+			roastNote = rsRoasts("Note")
 
 			roastProfileName = rsRoasts("ProfileName")
 			if roastProfileName&"" = "" then
@@ -524,6 +561,12 @@ sub writeRoastData(byval roastId)
 			</div>
 			<div class="col-xs-12">
 				<div class="form-group">
+					<label>Note</label>
+					<textarea class="form-control" data-for="roastNote" rows="2"><%=e(roastNote)%></textarea>
+				</div>
+			</div>
+			<div class="col-xs-12">
+				<div class="form-group">
 					<label>Start time</label>
 					<p class="form-control-static"><%=e(roastStartTime)%></p>
 				</div>
@@ -534,18 +577,30 @@ sub writeRoastData(byval roastId)
 					<p class="form-control-static"><%=e(roastDuration)%></p>
 				</div>
 			</div>
-			<div class="col-xs-12">
-				<div class="form-group">
-					<label>Manual control start time</label>
-					<p class="form-control-static"><%=e(roastManualControlStartTime)%></p>
+			<%if roastManualControlStartTime&""<>"-" then%>
+				<div class="col-xs-12">
+					<div class="form-group">
+						<label>Manual control start time</label>
+						<p class="form-control-static"><%=e(roastManualControlStartTime)%></p>
+					</div>
 				</div>
-			</div>
-			<div class="col-xs-12">
-				<div class="form-group">
-					<label>Log count</label>
-					<p class="form-control-static"><%=e(roastLogCount)%></p>
+			<%end if%>
+			<%if roastFirstCrackElapsed&""<>"-" or roastFirstCrackTemp&""<>"-" then%>
+				<div class="col-xs-12">
+					<div class="form-group">
+						<label>First crack</label>
+						<p class="form-control-static"><%=roastFirstCrackTemp%> / <%=e(roastFirstCrackElapsed)%></p>
+					</div>
 				</div>
-			</div>
+			<%end if%>
+			<%if roastSecondCrackElapsed&""<>"-" or roastSecondCrackTemp&""<>"-" then%>
+				<div class="col-xs-12">
+					<div class="form-group">
+						<label>Second crack</label>
+						<p class="form-control-static"><%=roastSecondCrackTemp%> / <%=e(roastSecondCrackElapsed)%></p>
+					</div>
+				</div>
+			<%end if%>
 			<div class="col-xs-12">
 				<div class="form-group">
 					<label>Photo</label>

@@ -3,9 +3,12 @@ body {
 	padding-top:20px;
 }
 hr {margin-top:10px;margin-bottom:10px;}
+textarea {resize:vertical;}
 nav.main-nav {
 }
-
+.tooltip-inner {
+    white-space:pre-wrap;
+}
 .btn {
 	&.btn-sm {
 		&.refresh-button, &.maximize-button, &.add-button, &.close-button {
@@ -111,6 +114,10 @@ td {
 		}
 		&.glyphicon-remove {
 			color:gray;
+		}
+		&.glyphicon-info-sign {
+			color:gray;
+			cursor:pointer;
 		}
 	}
 }

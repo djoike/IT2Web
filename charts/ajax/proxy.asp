@@ -26,7 +26,8 @@ if f&""<>"" then
 			roastIntentId = int(request.querystring("roastIntentId"))
 			rawBeanWeight = int(request.querystring("rawBeanWeight"))
 			financialOwnerId = int(request.querystring("financialOwnerId"))
-			call saveRoast(roastId, beanId, roastIntentId, rawBeanWeight, financialOwnerId)
+			roastNote = request.querystring("roastNote")
+			call saveRoast(roastId, beanId, roastIntentId, rawBeanWeight, financialOwnerId, roastNote)
 		case "writeBeansTable"
 			call writeBeansTable()
 		case "writeBean"

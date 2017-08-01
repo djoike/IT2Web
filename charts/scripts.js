@@ -12,7 +12,6 @@ function lefZ(number,minLength)
 	return s;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////
 // COMMON PROFILE GRAPHING  ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -239,16 +238,11 @@ function saveBeanAndRoastIntent(roastId, callback)
 	var roastIntentId = $('[data-for="roastIntentId"]').val();
 	var rawBeanWeight = $('[data-for="rawBeanWeight"]').val();
 	var financialOwnerId = $('[data-for="financialOwnerId"]').val();
-
-	function handleRoastSaved(data)
-	{
-		//elmTarget.html(data);
-		//callback();
-	}
+	var roastNote = $('[data-for="roastNote"]').val();
 
 	$.ajax({
 	  url: '/charts/ajax/proxy.asp',
-	  data: {function: "saveRoast",roastId: roastId, beanId: beanId, roastIntentId: roastIntentId, rawBeanWeight: rawBeanWeight, financialOwnerId: financialOwnerId},
+	  data: {function: "saveRoast",roastId: roastId, beanId: beanId, roastIntentId: roastIntentId, rawBeanWeight: rawBeanWeight, financialOwnerId: financialOwnerId, roastNote: roastNote},
 	  success: callback
 	});
 }
@@ -358,6 +352,7 @@ function handleAddRoastLoaded(elmTarget)
 	toggleMaximizePanel(null,$container);
 	$container.find('td.view-column a').off('click').on('click',handleAddRoastClick);
 	$container.find('.btn-save').off('click').on('click',function(){endAddRoast(elmTarget)});
+	$container.find('[data-toggle="tooltip"]').tooltip(); 
 }
 function handleAddRoastClick(event)
 {
