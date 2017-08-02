@@ -170,7 +170,6 @@
 				opacity: 1;
 			}
 			.button[data-type="manual-override"] {
-				float:left;
 				border-color:#d3e8be;
 				width: 90vw;
 			}
@@ -180,6 +179,9 @@
 			.button[data-type="end-roast"] {
 				float:left;
 				width:89.6vw;
+			}
+			.button[data-type="start-roast"], .button[data-type="end-roast"] {
+				margin-top:8vw;
 			}
 			.container[data-type="roasting-with-profile"] .button[data-type="end-roast"]
 			{
@@ -406,6 +408,15 @@
 			.container[data-type="edit-profile"] .datacontainer li span.input-container.last {
 				margin-right: 0;
 			}
+			.crack-container {
+				margin-top: 8vw;
+			}
+			.crack-container .button {
+				float:right;
+			}
+			.crack-container .button:first-child {
+				float:left;
+			}
 		</style>
 	</head>
 	<body>
@@ -437,9 +448,12 @@
 			</div>
 			<div class="spacer-s1"></div>
 			<div class="button" data-type="manual-override"><div class="armedbg"></div><div class="label">Manual</div></div>
-			<div class="spacer-s1"></div>
+			<div class="crack-container">
+				<div class="button" data-type="first-crack" data-visible-on-clear="false"><div class="armedbg"></div><div class="label">1st</div></div>
+				<div class="button" data-type="second-crack" data-visible-on-clear="false"><div class="armedbg"></div><div class="label">2nd</div></div>
+				<div class="cb"></div>
+			</div>
 			<div class="button" data-type="start-roast" data-visible-on-clear="false"><div class="armedbg"></div><div class="label">Start roast</div></div>
-			<div class="spacer-s1"></div>
 			<div class="button" data-type="end-roast" data-visible-on-clear="false"><div class="armedbg"></div><div class="label">End roast</div></div>
 			<div class="cb"></div>
 		</div>
@@ -464,7 +478,6 @@
 			<div class="button" data-type="temperature-decrease" data-amount="-1" data-disable-arming="true"><div class="armedbg"></div><div class="label">-1</div></div>
 			<div class="button" data-type="temperature-increase" data-amount="1" data-disable-arming="true"><div class="armedbg"></div><div class="label">+1</div></div>
 			<div class="button" data-type="temperature-increase" data-amount="10" data-disable-arming="true"><div class="armedbg"></div><div class="label">+10</div></div>
-			<div class="spacer-s1"></div>
 			<div class="button" data-type="end-roast"><div class="armedbg"></div><div class="label">End roast</div></div>
 			<div class="cb"></div>
 		</div>

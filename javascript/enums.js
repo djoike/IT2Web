@@ -36,7 +36,9 @@ var InterfaceComActions = Object.freeze(
 		GetManualRoastTemperature: 90,
 		DeleteProfile: 100,
 		MasterReset: 110,
-		RemoveProfile: 120
+		RemoveProfile: 120,
+		SetFirstCrack: 130,
+        SetSecondCrack: 140
 	}
 );
 
@@ -53,7 +55,8 @@ var EndPoints = Object.freeze(
 			GetProfiles: "/getprofiles.txt",
 			SaveProfile: "/getprofiles.txt",
 			MasterReset: "/getprofiles.txt",
-			RemoveProfile: "/getprofiles.txt"
+			RemoveProfile: "/getprofiles.txt",
+			SetCracks: "/getprofiles.txt"
 		},
 		Live:
 		{
@@ -66,7 +69,8 @@ var EndPoints = Object.freeze(
 			GetProfiles: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
 			SaveProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
 			MasterReset: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
-			RemoveProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx"
+			RemoveProfile: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx",
+			SetCracks: "http://webinterface.il-torrefattore.dk/RoastIO/InterfaceCom.aspx"
 		}
 	}
 );

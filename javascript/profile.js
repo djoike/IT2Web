@@ -53,6 +53,8 @@ var profile = {
 			case RoastStatus.StartingRoastingWithProfile:
 			case RoastStatus.RoastingWithProfile:
 				$('.button[data-type="end-roast"]',strContainerElm).show();
+				$('.button[data-type="first-crack"]',strContainerElm).show();
+				$('.button[data-type="second-crack"]',strContainerElm).show();
 				$('.button[data-type="start-roast"]',strContainerElm).hide();
 				break;
 			case RoastStatus.NoCommunicationYet:
@@ -260,6 +262,12 @@ var profile = {
 				case "remove-profile":
 					profile.removeProfile();
 					break;
+				case "first-crack":
+					profile.setCrack(elm.data('type'));
+					break;
+				case "second-crack":
+					profile.setCrack(elm.data('type'));
+					break;
 			}
 			
 			//Remove arming
@@ -277,7 +285,16 @@ var profile = {
 			clearTimeout(profile.buttonTimer);
 			profile.buttonTimer = setTimeout("ui.disarmAll('roasting-with-profile');",3000);
 		}
-	}
+	},
+	setCrack: function(crack)
+	{
+		var dataObj = crack == "first-crack" ? {"Action":InterfaceComActions.SetFirstCrack} : {"Action":InterfaceComActions.SetSecondCrack};
+		$.ajax({
+		    type: Methods.Live,
+		    url: EndPoints.Live.SetCracks,
+		    data: {"data":JSON.stringify(dataObj)}
+		});
+	},
 	// **************************************  END: Clicking/tapping events
 
 
