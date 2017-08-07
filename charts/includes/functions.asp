@@ -113,6 +113,13 @@ function getRoastData(byval roastIds)
 	roastIds = replace(roastIds,"'","")
 	response.write("{""data"":[")
 
+	i = 0
+
+	firstCrackElapsed = ""
+	secondCrackElapsed = ""
+	firstCrackTemp = ""
+	secondCrackTemp = ""
+
 	first = true
 	for each roastId in split(roastIds,",")
 		roastId = trim(roastId)
@@ -121,6 +128,23 @@ function getRoastData(byval roastIds)
 		profileText = rsRoast("RoastProfileText")
 		if profileText&""="" then
 			profileText = rsRoast("ProfileText")
+		end if
+
+		firstCrackElapsed = rsRoast("FirstCrackElapsed")
+		if firstCrackElapsed&""="" then
+			firstCrackElapsed = "null"
+		end if
+		secondCrackElapsed = rsRoast("SecondCrackElapsed")
+		if secondCrackElapsed&""="" then
+			secondCrackElapsed = "null"
+		end if
+		firstCrackTemp = replace(rsRoast("FirstCrackTemp")&"",",",".")
+		if firstCrackTemp&""="" then
+			firstCrackTemp = "null"
+		end if
+		secondCrackTemp = replace(rsRoast("secondCrackTemp")&"",",",".")
+		if secondCrackTemp&""="" then
+			secondCrackTemp = "null"
 		end if
 
 		if not first then
@@ -150,12 +174,17 @@ function getRoastData(byval roastIds)
 		
 		response.write("{""roastId"": """&roastId&""",""data"":"&strData&",""profileText"":"""&profileText&"""}")
 		
-		
+		i = i + 1
 		first = false
 	next
+	response.write("]")
+	
+	if i = 1 then
+		response.write(",""crackPoints"":{""firstCrack"":{""elapsed"":"&firstCrackElapsed&",""temp"":"&firstCrackTemp&"},""secondCrack"":{""elapsed"":"&secondCrackElapsed&",""temp"":"&secondCrackTemp&"}}")	
+	end if
 
 
-	response.write("]}")
+	response.write("}")
 end function
 
 function getBeansSQL(byval beanId)

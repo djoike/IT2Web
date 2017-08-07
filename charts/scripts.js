@@ -120,12 +120,13 @@ function convertProfileStepsToGraphDataSet(profile)
 ////////////////////////////////////////////////////////////////////////////
 var __roastGraphDataSets = {datasets: []};
 var __roastGraphProfileDataPoints = [];
+var __roastGraphCrackPoints;
 function handleRoastDataAndDrawGraph(data)
 {
 	__roastGraphDataSets.datasets = [];
 	for(var i = 0; i < data.data.length; i++)
 	{
-		__roastGraphDataSets.datasets.push({label:data.data[i].roastId,data:data.data[i].data,borderColor: "rgba(33,77,255,0.2)"});
+		__roastGraphDataSets.datasets.push({label:data.data[i].roastId,data:data.data[i].data,borderColor: "rgba(33,77,255,0.6)",pointRadius: 0,pointHitRadius: 10});
 	}
 	drawGraph(__roastGraphDataSets);
 	
@@ -141,8 +142,70 @@ function handleRoastDataAndDrawGraph(data)
 		__roastGraphProfileDataPoints = [];
 	}
 	handleRoastGraphProfileLoaded();
+
+	__roastGraphCrackPoints = {"first":null,"second":null};
+	if(data.crackPoints !== undefined)
+	{
+		var crackPoints = data.crackPoints;
+		if(crackPoints.firstCrack.elapsed !== null)
+		{
+			var point = {
+			    timeInSec: crackPoints.firstCrack.elapsed,
+			    temperature: crackPoints.firstCrack.temp
+			}
+			var downLinePoint = {
+			    timeInSec: crackPoints.firstCrack.elapsed,
+			    temperature: 0
+			}
+			__roastGraphCrackPoints.first = [getDataPointJSON(point),getDataPointJSON(downLinePoint)];
+		}
+		if(crackPoints.secondCrack.elapsed !== null)
+		{
+			var point = {
+			    timeInSec: crackPoints.secondCrack.elapsed,
+			    temperature: crackPoints.secondCrack.temp
+			}
+			var downLinePoint = {
+			    timeInSec: crackPoints.secondCrack.elapsed,
+			    temperature: 0
+			}
+			__roastGraphCrackPoints.second = [getDataPointJSON(point),getDataPointJSON(downLinePoint)];
+		}
+	}
+	handleRoastGraphCrackPointsLoaded();
+
+	
 	$('.main-roast-graph .loader').hide();
 	$("#main-roast-chart-container").show();
+}
+
+function handleRoastGraphCrackPointsLoaded()
+{
+	if(__roastGraphCrackPoints.first !== null)
+	{
+		__roastGraphDataSets.datasets.push({
+	        label:'First crack',
+	        data:__roastGraphCrackPoints.first,
+	        lineTension: 0,
+	        borderColor: "rgba(255,0,0,0.6)",
+	        pointRadius: 0,
+	        pointHitRadius: 20
+	    });
+		
+	}
+	if(__roastGraphCrackPoints.second !== null)
+	{
+		__roastGraphDataSets.datasets.push({
+	        label:'Second crack',
+	        data:__roastGraphCrackPoints.second,
+	        lineTension: 0,
+	        borderColor: "rgba(255,60,255,0.6)",
+	        pointRadius: 0,
+	        pointHitRadius: 20
+	    });
+		
+	}
+	drawGraph(__roastGraphDataSets);
 }
 
 function handleRoastGraphProfileLoaded()
@@ -153,7 +216,9 @@ function handleRoastGraphProfileLoaded()
 	        label:'Profile',
 	        data:__roastGraphProfileDataPoints,
 	        lineTension: 0,
-	        borderColor: "rgba(251,118,75,0.6)"
+	        borderColor: "rgba(251,118,75,0.6)",
+	        pointRadius: 0,
+	        pointHitRadius: 10
 	    });
 		drawGraph(__roastGraphDataSets);
 	}
